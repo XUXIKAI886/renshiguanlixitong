@@ -132,7 +132,7 @@ export const POSITIONS = [
 // 分页默认配置
 export const PAGINATION_DEFAULTS = {
   PAGE: 1,
-  LIMIT: 10,
+  LIMIT: 20,
   MAX_LIMIT: 100,
 };
 

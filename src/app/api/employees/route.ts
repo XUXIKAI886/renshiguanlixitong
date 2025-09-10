@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = parseInt(searchParams.get('limit') || '20');
     const keyword = searchParams.get('keyword') || '';
     const department = searchParams.get('department') || '';
     const position = searchParams.get('position') || '';
