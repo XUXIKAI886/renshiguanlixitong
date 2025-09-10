@@ -125,8 +125,8 @@ export const POSITIONS = [
   '美工',
 ];
 
-// 数据库连接字符串
-export const DATABASE_URL = 'mongodb://root:6wtbssl5@dbconn.sealosbja.site:35702/?directConnection=true';
+// 数据库连接字符串（已移除硬编码，使用环境变量）
+// export const DATABASE_URL = 'mongodb://root:6wtbssl5@dbconn.sealosbja.site:35702/?directConnection=true';
 
 // 分页默认配置
 export const PAGINATION_DEFAULTS = {
