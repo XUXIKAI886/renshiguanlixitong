@@ -203,15 +203,7 @@ export default function HomePage() {
         {/* 系统价值介绍 */}
         <Card className="mt-8 border-0 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/10"></div>
-          <CardHeader className="relative z-10 text-center pb-6">
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              系统价值
-            </CardTitle>
-            <CardDescription className="text-lg text-gray-600 mt-2">
-              数字化人事管理，提升企业运营效率
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="relative z-10">
+          <CardContent className="relative z-10 pt-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="group p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 border border-blue-100">
                 <div className="flex items-center gap-4 mb-6">
