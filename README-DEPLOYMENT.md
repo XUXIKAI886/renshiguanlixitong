@@ -3,12 +3,23 @@
 ## 部署前准备
 
 ### 1. 数据库准备
-- **推荐使用 MongoDB Atlas**（免费层足够开发使用）
-- 或者其他云MongoDB服务（如阿里云、腾讯云等）
+- **当前使用 Sealos 云数据库**（已配置好的生产环境数据库）
+- 连接字符串：`mongodb://root:6wtbssl5@dbconn.sealosbja.site:35702/?directConnection=true`
+- 备选方案：MongoDB Atlas、阿里云、腾讯云等其他云数据库服务
 
-### 2. 获取数据库连接字符串
+### 2. 数据库连接字符串
+**生产环境（Sealos）：**
 ```
+mongodb://root:6wtbssl5@dbconn.sealosbja.site:35702/?directConnection=true
+```
+
+**其他可选连接格式：**
+```
+# MongoDB Atlas
 mongodb+srv://username:password@cluster.mongodb.net/hr-management?retryWrites=true&w=majority
+
+# 本地开发
+mongodb://localhost:27017/hr-management
 ```
 
 ## 🔧 Vercel 部署步骤
@@ -47,7 +58,7 @@ vercel env add MONGODB_URI
 3. **配置环境变量**
    在部署设置中添加：
    ```
-   MONGODB_URI = mongodb+srv://username:password@cluster.mongodb.net/hr-management
+   MONGODB_URI = mongodb://root:6wtbssl5@dbconn.sealosbja.site:35702/?directConnection=true
    NODE_ENV = production
    ```
 
@@ -61,7 +72,7 @@ vercel env add MONGODB_URI
 
 ### 必需的环境变量：
 ```env
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/hr-management
+MONGODB_URI=mongodb://root:6wtbssl5@dbconn.sealosbja.site:35702/?directConnection=true
 NODE_ENV=production
 ```
 
