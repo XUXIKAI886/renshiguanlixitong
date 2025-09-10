@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import { calculateWorkingDays } from '@/utils';
 
 // 导出数据到Excel
 export function exportToExcel(data: any[], filename: string, sheetName: string = 'Sheet1') {
@@ -38,10 +39,12 @@ export function formatEmployeeDataForExport(employees: any[]) {
     '岗位': employee.position,
     '在职状况': employee.workStatus === 'active' ? '在职' : 
                 employee.workStatus === 'resigned' ? '离职' : '休假',
-    '在职天数': employee.workingDays,
+    '在职天数': employee.workStatus === 'active' 
+      ? calculateWorkingDays(new Date(employee.regularDate))
+      : employee.workingDays,
     '总积分': employee.totalScore,
     '转正日期': new Date(employee.regularDate).toLocaleDateString('zh-CN'),
-    '创建时间': new Date(employee.createdAt).toLocaleDateString('zh-CN')
+    '今日日期': new Date().toLocaleDateString('zh-CN')
   }));
 }
 

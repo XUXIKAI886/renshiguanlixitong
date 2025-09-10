@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { Employee } from '@/types';
 import { GENDER_LABELS, WORK_STATUS_LABELS, DEPARTMENTS, POSITIONS } from '@/constants';
-import { formatDate } from '@/utils';
+import { formatDate, calculateWorkingDays } from '@/utils';
 import { exportToExcel, formatEmployeeDataForExport } from '@/utils/export';
 import { toast } from 'sonner';
 
@@ -394,7 +394,7 @@ export default function EmployeeList({
                   <TableHead>在职天数</TableHead>
                   <TableHead>总积分</TableHead>
                   <TableHead>转正日期</TableHead>
-                  <TableHead>创建时间</TableHead>
+                  <TableHead>今日日期</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
@@ -442,7 +442,9 @@ export default function EmployeeList({
                       </TableCell>
                       <TableCell className="text-center">
                         <span className="font-medium text-green-600">
-                          {employee.workingDays} 天
+                          {employee.workStatus === 'active' 
+                            ? calculateWorkingDays(new Date(employee.regularDate))
+                            : employee.workingDays} 天
                         </span>
                       </TableCell>
                       <TableCell className="text-center">
@@ -454,7 +456,7 @@ export default function EmployeeList({
                         {formatDate(employee.regularDate)}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {employee.createdAt ? formatDate(employee.createdAt) : '-'}
+                        {formatDate(new Date())}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
