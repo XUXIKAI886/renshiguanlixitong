@@ -129,14 +129,12 @@ const EmployeeSchema = new Schema<EmployeeDocument>(
   }
 );
 
-// 创建索引
-EmployeeSchema.index({ employeeId: 1 }, { unique: true });
+// 创建索引（非unique索引，unique已在字段定义中设置）
 EmployeeSchema.index({ name: 1 });
 EmployeeSchema.index({ department: 1 });
 EmployeeSchema.index({ position: 1 });
 EmployeeSchema.index({ workStatus: 1 });
 EmployeeSchema.index({ totalScore: -1 });
-EmployeeSchema.index({ idCard: 1 }, { unique: true });
 
 // 虚拟字段：计算在职天数
 EmployeeSchema.virtual('calculatedWorkingDays').get(function() {
