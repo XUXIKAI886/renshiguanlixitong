@@ -210,7 +210,21 @@ export async function DELETE(
       );
     }
 
-    // 检查员工是否已经离职
+    // 检查是否为测试数据（李佳佳和王小明），允许硬删除
+    const isTestData = employee.employeeId === 'EMP1757403583480' || 
+                      employee.employeeId === 'EMP1757403508610';
+
+    if (isTestData) {
+      // 硬删除测试数据
+      await Employee.findByIdAndDelete(id);
+      
+      return NextResponse.json({
+        success: true,
+        message: '测试员工数据已完全删除'
+      });
+    }
+
+    // 检查员工是否已经离职（普通员工）
     if (employee.workStatus === 'resigned') {
       return NextResponse.json(
         { success: false, error: '员工已经是离职状态' },
@@ -218,7 +232,7 @@ export async function DELETE(
       );
     }
 
-    // 软删除：设置为离职状态
+    // 软删除：设置为离职状态（普通员工）
     const updatedEmployee = await Employee.findByIdAndUpdate(
       id,
       { workStatus: 'resigned' },
