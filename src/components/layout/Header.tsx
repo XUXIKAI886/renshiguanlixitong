@@ -57,15 +57,23 @@ export default function Header() {
             key={item.name}
             href={item.href}
             className={cn(
-              'flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+              'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative group',
               isActive
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/80',
               mobile && 'w-full justify-start'
             )}
           >
-            <Icon className="h-4 w-4" />
-            {item.name}
+            <Icon className={cn(
+              "h-4 w-4 transition-all duration-300",
+              isActive ? "text-white" : "text-gray-500 group-hover:text-blue-500"
+            )} />
+            <span className="relative">
+              {item.name}
+              {isActive && !mobile && (
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white rounded-full"></div>
+              )}
+            </span>
           </Link>
         );
       })}
@@ -73,20 +81,25 @@ export default function Header() {
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-white/20 bg-white/80 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 shadow-sm">
       <div className="container mx-auto px-6 flex h-16 items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Users className="h-4 w-4" />
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+              <Users className="h-5 w-5" />
             </div>
-            <span className="hidden font-bold sm:inline-block">
-              呈尚策划人事管理系统
-            </span>
-            <span className="font-bold sm:hidden">
-              人事系统
-            </span>
+            <div className="flex flex-col">
+              <span className="hidden font-bold text-gray-900 sm:inline-block group-hover:text-blue-600 transition-colors duration-300">
+                呈尚策划人事管理系统
+              </span>
+              <span className="hidden text-xs text-gray-500 sm:inline-block">
+                Digital HR Management
+              </span>
+              <span className="font-bold text-gray-900 sm:hidden group-hover:text-blue-600 transition-colors duration-300">
+                人事系统
+              </span>
+            </div>
           </Link>
         </div>
 

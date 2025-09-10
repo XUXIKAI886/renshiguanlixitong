@@ -118,47 +118,66 @@ export default function HomePage() {
   }, []);
 
   return (
-    <PageContainer
-      title="系统主页"
-      description="欢迎使用呈尚策划人事管理系统"
-    >
-      {/* 快速统计 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <PageContainer
+        title="系统主页"
+        description="欢迎使用呈尚策划人事管理系统"
+      >
+        {/* 欢迎横幅 */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-8 mb-8 shadow-xl">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative z-10">
+            <h1 className="text-3xl font-bold text-white mb-2">欢迎使用呈尚策划人事管理系统</h1>
+            <p className="text-blue-100 text-lg">数字化人事管理，提升企业运营效率</p>
+          </div>
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-white/10"></div>
+          <div className="absolute bottom-0 left-0 -mb-8 -ml-8 h-24 w-24 rounded-full bg-white/5"></div>
+        </div>
+
+        {/* 快速统计 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {quickStatsConfig.map((statConfig) => {
           const Icon = statConfig.icon;
           const statData = dashboardStats?.[statConfig.key];
 
           return (
-            <Card key={statConfig.title}>
+            <Card key={statConfig.title} className="group hover:shadow-lg transition-all duration-300 border-0 bg-white/70 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-600 mb-2">
                       {statConfig.title}
                     </p>
-                    <div className="flex items-baseline gap-1">
-                      <p className="text-2xl font-bold">
-                        {statsLoading ? '...' : (statData?.value || '0')}
+                    <div className="flex items-baseline gap-2 mb-3">
+                      <p className="text-3xl font-bold text-gray-900">
+                        {statsLoading ? (
+                          <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                        ) : (statData?.value || '0')}
                       </p>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm font-medium text-gray-500">
                         {statConfig.unit}
                       </span>
                     </div>
                     {!statsLoading && statData && (
-                      <div className="flex items-center gap-1 mt-1">
+                      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                        statData.isPositive 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-red-100 text-red-700'
+                      }`}>
                         <TrendingUp className={`h-3 w-3 ${
-                          statData.isPositive ? 'text-green-500' : 'text-red-500'
+                          statData.isPositive ? 'text-green-600' : 'text-red-600 rotate-180'
                         }`} />
-                        <span className={`text-xs ${
-                          statData.isPositive ? 'text-green-500' : 'text-red-500'
-                        }`}>
-                          {statData.trend}
-                        </span>
+                        {statData.trend}
                       </div>
                     )}
                   </div>
-                  <div className={`p-3 rounded-full bg-muted ${statConfig.color}`}>
-                    <Icon className="h-5 w-5" />
+                  <div className={`p-4 rounded-xl bg-gradient-to-br ${
+                    statConfig.color === 'text-blue-600' ? 'from-blue-500 to-blue-600' :
+                    statConfig.color === 'text-green-600' ? 'from-green-500 to-green-600' :
+                    statConfig.color === 'text-purple-600' ? 'from-purple-500 to-purple-600' :
+                    'from-orange-500 to-orange-600'
+                  } shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
+                    <Icon className="h-6 w-6 text-white" />
                   </div>
                 </div>
               </CardContent>
@@ -167,16 +186,20 @@ export default function HomePage() {
         })}
       </div>
 
-      {/* 系统健康状态 */}
-      {!healthLoading && systemHealth && (
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              系统状态
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        {/* 系统健康状态 */}
+        {!healthLoading && systemHealth && (
+          <Card className="mb-8 border-0 bg-white/70 backdrop-blur-sm shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <div className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500">
+                  <Activity className="h-5 w-5 text-white" />
+                </div>
+                <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  系统状态监控
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-full ${
@@ -227,100 +250,157 @@ export default function HomePage() {
         </Card>
       )}
 
-      {/* 核心模块卡片 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {moduleCards.map((module) => {
-          const Icon = module.icon;
-          return (
-            <Card key={module.title} className="group hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-lg ${module.color} text-white`}>
-                    <Icon className="h-6 w-6" />
+        {/* 核心模块卡片 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {moduleCards.map((module) => {
+            const Icon = module.icon;
+            return (
+              <Card key={module.title} className="group hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+                <div className={`absolute inset-0 bg-gradient-to-br ${
+                  module.color === 'bg-blue-500' ? 'from-blue-500/5 to-blue-600/10' : 'from-green-500/5 to-green-600/10'
+                } opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                <CardHeader className="relative z-10 pb-4">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-4 rounded-xl bg-gradient-to-br ${
+                      module.color === 'bg-blue-500' ? 'from-blue-500 to-blue-600' : 'from-green-500 to-green-600'
+                    } text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}>
+                      <Icon className="h-7 w-7" />
+                    </div>
+                    <div className="flex-1">
+                      <CardTitle className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent group-hover:from-blue-600 group-hover:to-purple-600 transition-all duration-300">
+                        {module.title}
+                      </CardTitle>
+                      <CardDescription className="mt-2 text-gray-600 group-hover:text-gray-700 transition-colors duration-300">
+                        {module.description}
+                      </CardDescription>
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle className="text-xl">{module.title}</CardTitle>
-                    <CardDescription className="mt-2">
-                      {module.description}
-                    </CardDescription>
+                </CardHeader>
+                <CardContent className="relative z-10">
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-3">
+                      {module.features.map((feature) => (
+                        <div key={feature} className="flex items-center gap-2 text-sm text-gray-600 group-hover:text-gray-700 transition-colors duration-300">
+                          <div className={`h-2 w-2 rounded-full ${
+                            module.color === 'bg-blue-500' ? 'bg-blue-500' : 'bg-green-500'
+                          } group-hover:scale-125 transition-transform duration-300`} />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-3">
+                      <Button asChild className={`flex-1 ${
+                        module.color === 'bg-blue-500' 
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700' 
+                          : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+                      } text-white border-0 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300`}>
+                        <Link href={module.href} className="flex items-center justify-center">
+                          进入系统
+                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    {module.features.map((feature) => (
-                      <div key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                        {feature}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button asChild className="flex-1 group-hover:bg-primary/90">
-                      <Link href={module.href}>
-                        进入系统
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           );
         })}
       </div>
 
-      {/* 系统价值介绍 */}
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>系统价值</CardTitle>
-          <CardDescription>
-            数字化人事管理，提升企业运营效率
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
-                  <UserPlus className="h-5 w-5" />
+        {/* 系统价值介绍 */}
+        <Card className="mt-8 border-0 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/10"></div>
+          <CardHeader className="relative z-10 text-center pb-6">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              系统价值
+            </CardTitle>
+            <CardDescription className="text-lg text-gray-600 mt-2">
+              数字化人事管理，提升企业运营效率
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="group p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 border border-blue-100">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                    <UserPlus className="h-6 w-6" />
+                  </div>
+                  <h4 className="font-bold text-xl text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+                    招聘记录管理系统
+                  </h4>
                 </div>
-                <h4 className="font-semibold text-lg">招聘记录管理系统</h4>
+                <div className="space-y-4 text-gray-700">
+                  <p className="font-medium">
+                    <span className="text-blue-600 font-bold">目的：</span>规范招聘流程，提升人才筛选效率
+                  </p>
+                  <div>
+                    <p className="font-medium mb-3">
+                      <span className="text-blue-600 font-bold">核心价值：</span>
+                    </p>
+                    <ul className="space-y-2 ml-4">
+                      <li className="flex items-start gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                        <span>标准化面试流程，减少主观判断偏差</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                        <span>数据化试岗管理，量化员工适岗能力</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                        <span>招聘漏斗分析，优化人才获取渠道</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                        <span>降低招聘成本，提高人岗匹配度</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-3 text-sm text-muted-foreground">
-                <p><strong className="text-foreground">目的：</strong>规范招聘流程，提升人才筛选效率</p>
-                <p><strong className="text-foreground">核心价值：</strong></p>
-                <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>标准化面试流程，减少主观判断偏差</li>
-                  <li>数据化试岗管理，量化员工适岗能力</li>
-                  <li>招聘漏斗分析，优化人才获取渠道</li>
-                  <li>降低招聘成本，提高人岗匹配度</li>
-                </ul>
-              </div>
-            </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-100 text-green-600">
-                  <Award className="h-5 w-5" />
+              <div className="group p-6 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 transition-all duration-300 border border-green-100">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                    <Award className="h-6 w-6" />
+                  </div>
+                  <h4 className="font-bold text-xl text-gray-900 group-hover:text-green-600 transition-colors duration-300">
+                    员工贡献评估系统
+                  </h4>
                 </div>
-                <h4 className="font-semibold text-lg">员工贡献评估系统</h4>
-              </div>
-              <div className="space-y-3 text-sm text-muted-foreground">
-                <p><strong className="text-foreground">目的：</strong>激发员工潜能，构建公平激励机制</p>
-                <p><strong className="text-foreground">核心价值：</strong></p>
-                <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>量化工作贡献，建立透明评价体系</li>
-                  <li>积分制管理，实时反馈员工表现</li>
-                  <li>年度评优机制，树立榜样激励团队</li>
-                  <li>数据驱动决策，优化人力资源配置</li>
-                </ul>
+                <div className="space-y-4 text-gray-700">
+                  <p className="font-medium">
+                    <span className="text-green-600 font-bold">目的：</span>激发员工潜能，构建公平激励机制
+                  </p>
+                  <div>
+                    <p className="font-medium mb-3">
+                      <span className="text-green-600 font-bold">核心价值：</span>
+                    </p>
+                    <ul className="space-y-2 ml-4">
+                      <li className="flex items-start gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0"></div>
+                        <span>量化工作贡献，建立透明评价体系</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0"></div>
+                        <span>积分制管理，实时反馈员工表现</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0"></div>
+                        <span>年度评优机制，树立榜样激励团队</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0"></div>
+                        <span>数据驱动决策，优化人力资源配置</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-    </PageContainer>
+          </CardContent>
+        </Card>
+      </PageContainer>
+    </div>
   );
 }
