@@ -14,7 +14,7 @@ const recruitmentRecordSchema = z.object({
   hasTrial: z.boolean(),
   trialDays: z.number().min(1, '试岗天数至少1天').max(90, '试岗天数最多90天').optional(),
   trialStatus: z.enum(['excellent', 'good', 'average', 'poor']).optional(),
-  resignationReason: z.string().max(500, '离职原因最多500字').optional(),
+  resignationReason: z.string().max(500, '备注内容最多500字').optional(),
   recruitmentStatus: z.enum(['interviewing', 'trial', 'hired', 'rejected']).default('interviewing'),
 });
 

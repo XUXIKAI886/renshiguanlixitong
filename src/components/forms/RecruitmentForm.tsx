@@ -26,7 +26,7 @@ const formSchema = z.object({
   hasTrial: z.boolean(),
   trialDays: z.coerce.number().min(1, '试岗天数至少1天').max(90, '试岗天数最多90天').optional(),
   trialStatus: z.enum(['excellent', 'good', 'average', 'poor']).optional(),
-  resignationReason: z.string().max(500, '离职原因最多500字').optional(),
+  resignationReason: z.string().max(500, '备注内容最多500字').optional(),
   recruitmentStatus: z.enum(['interviewing', 'trial', 'hired', 'rejected']),
 });
 
@@ -289,10 +289,10 @@ export default function RecruitmentForm({
               name="resignationReason"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>离职原因</FormLabel>
+                  <FormLabel>备注内容</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="如有离职，请填写离职原因（最多500字）"
+                      placeholder="请填写相关备注信息（最多500字）"
                       className="min-h-[100px]"
                       {...field}
                     />

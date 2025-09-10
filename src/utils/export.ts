@@ -57,7 +57,7 @@ export function formatRecruitmentDataForExport(records: any[]) {
     '试岗日期': record.probationStartDate ? new Date(record.probationStartDate).toLocaleDateString('zh-CN') : '-',
     '试岗天数': record.probationDays || '-',
     '试岗状态': record.probationStatus || '-',
-    '离职原因': record.resignationReason || '-',
+    '备注内容': record.resignationReason || '-',
     '招聘状态': record.status === 'pending' ? '待处理' :
                 record.status === 'interviewing' ? '面试中' :
                 record.status === 'hired' ? '已录用' :

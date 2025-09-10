@@ -117,7 +117,7 @@ const RecruitmentRecordSchema = new Schema<RecruitmentRecordDocument>(
     },
     resignationReason: {
       type: String,
-      maxlength: [500, '离职原因最多500字'],
+      maxlength: [500, '备注内容最多500字'],
       trim: true
     },
     recruitmentStatus: {

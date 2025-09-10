@@ -352,7 +352,7 @@ export default function RecruitmentList({
                   <TableHead>试岗日期</TableHead>
                   <TableHead>试岗天数</TableHead>
                   <TableHead>试岗状态</TableHead>
-                  <TableHead>离职原因</TableHead>
+                  <TableHead>备注内容</TableHead>
                   <TableHead>招聘状态</TableHead>
                   <TableHead>创建时间</TableHead>
                   <TableHead>操作</TableHead>
