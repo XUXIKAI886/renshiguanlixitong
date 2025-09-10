@@ -66,7 +66,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-6 pt-8 pb-4">
         {/* 欢迎横幅 */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-8 mb-8 shadow-xl">
           <div className="absolute inset-0 bg-black/10"></div>
@@ -201,7 +201,7 @@ export default function HomePage() {
       </div>
 
         {/* 系统价值介绍 */}
-        <Card className="mt-8 border-0 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
+        <Card className="mt-8 mb-2 border-0 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/10"></div>
           <CardContent className="relative z-10 pt-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
