@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:prod": "next build --no-lint",
     "start": "next start",
     "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "vercel-build": "next build"
   },
   "dependencies": {

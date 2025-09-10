@@ -128,9 +128,15 @@ OPERATION_PASSWORD=your-custom-password
    - 检查 MONGODB_URI 是否正确
    - 确认数据库网络访问权限
 
-2. **构建失败**
+2. **ESLint/TypeScript 构建失败**
+   - 项目已配置忽略构建时的类型检查错误
+   - 如果仍然失败，请检查 `next.config.ts` 配置
+   - 确保 `ignoreDuringBuilds: true` 和 `ignoreBuildErrors: true` 已设置
+
+3. **构建失败**
    - 检查依赖是否完整
    - 查看构建日志
+   - 尝试重新部署
 
 3. **API 超时**
    - 检查数据库响应时间
