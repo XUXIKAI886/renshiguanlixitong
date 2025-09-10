@@ -132,7 +132,7 @@ export default function HomePage() {
 
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-full bg-purple-100 text-purple-600">
-                  <BarChart3 className="h-4 w-4" />
+                  <Database className="h-4 w-4" />
                 </div>
                 <div>
                   <p className="text-sm font-medium">数据统计</p>
