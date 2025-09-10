@@ -4,21 +4,27 @@
 
 ## 🌟 项目特色
 
-- **现代化技术栈**：Next.js 15 + TypeScript + MongoDB + Tailwind CSS
+- **现代化技术栈**：Next.js 15 + TypeScript + MongoDB + Tailwind CSS 4
+- **精美UI设计**：渐变背景、毛玻璃效果、现代化卡片设计
 - **响应式设计**：完美适配桌面端、平板和移动设备
+- **动画交互**：平滑过渡动画、悬停效果、交互反馈
+- **云端部署优化**：支持 Vercel 一键部署，构建错误自动处理
 - **数据可视化**：使用 Recharts 提供丰富的图表展示
 - **实时统计**：动态计算和展示关键业务指标
 - **安全保护**：身份证隐私保护和操作权限密码验证
+- **灵活积分系统**：支持负积分管理，无最小值限制
 - **证书生成**：支持生成和打印专业的获奖证书
 - **数据导出**：支持 Excel 格式的数据导出功能
 
 ## 🚀 核心功能
 
 ### 📊 系统主页
-- **实时仪表盘**：显示本月面试、在职员工、平均积分、试岗通过率等关键指标
-- **系统状态监控**：数据库响应时间、系统状态等信息
-- **功能导航**：快速访问各个子系统
-- **系统价值介绍**：展示招聘记录管理和员工贡献评估系统的价值
+- **现代化界面**：采用渐变背景和毛玻璃效果的现代化设计
+- **欢迎横幅**：精美的渐变横幅展示系统标题和介绍
+- **系统健康监控**：实时显示系统状态、数据库响应时间和数据统计
+- **核心模块导航**：招聘记录管理和员工贡献评估两大核心模块
+- **功能价值展示**：详细展示各模块的核心价值和功能特点
+- **响应式布局**：完美适配各种屏幕尺寸，提供优秀的用户体验
 
 ### 👥 招聘记录管理
 - **统计概览**：招聘总人数、试岗率、试岗离职率、平均试岗天数
@@ -32,8 +38,9 @@
 ### 🏢 员工信息管理
 - **统计概览**：员工总数、在职员工数、平均在职天数、积分最多员工
 - **档案管理**：员工基本信息、部门岗位、在职状况等
-- **积分跟踪**：员工总积分显示和排名
+- **积分跟踪**：员工总积分显示和排名，支持负积分管理
 - **状态管理**：在职、离职、休假等状态管理
+- **全员显示**：默认显示所有员工信息，无状态筛选限制
 - **隐私保护**：身份证号自动隐藏，需要密码查看完整信息
 - **权限控制**：编辑和设置离职操作需要密码验证
 - **搜索筛选**：支持按姓名、员工ID、部门、岗位等条件筛选
@@ -62,14 +69,15 @@
 ## 🛠️ 技术栈
 
 ### 前端技术
-- **Next.js 15**：React 全栈框架，支持 App Router
+- **Next.js 15**：React 全栈框架，支持 App Router 和 Turbopack
 - **React 19**：最新的 React 版本
 - **TypeScript**：类型安全的 JavaScript
-- **Tailwind CSS 4**：原子化 CSS 框架
+- **Tailwind CSS 4**：原子化 CSS 框架，支持现代渐变和动画
 - **Radix UI**：无障碍的 UI 组件库
 - **Lucide React**：现代化图标库
 - **React Hook Form**：高性能表单库
 - **Zod**：TypeScript 优先的数据验证库
+- **Framer Motion**：高性能动画库（可选）
 
 ### 后端技术
 - **Next.js API Routes**：服务端 API 接口
@@ -125,8 +133,15 @@ hr-management-system/
 ### 环境要求
 
 - Node.js 18.0 或更高版本
-- MongoDB 4.4 或更高版本
+- MongoDB 4.4 或更高版本（支持云数据库如 Sealos）
 - npm、yarn、pnpm 或 bun 包管理器
+
+### 云端部署支持
+
+本项目已优化支持云端部署：
+- **Vercel**：一键部署，自动构建
+- **Sealos**：云数据库支持
+- **GitHub**：代码托管和自动化部署
 
 ### 安装步骤
 
@@ -150,10 +165,13 @@ pnpm install
 创建 `.env.local` 文件并配置以下环境变量：
 
 ```env
-# MongoDB 连接字符串
+# MongoDB 连接字符串（本地）
 MONGODB_URI=mongodb://localhost:27017/hr-management
 
-# 可选：其他配置
+# 或使用云数据库（如 Sealos）
+# MONGODB_URI=mongodb://root:your-password@your-host:port/?directConnection=true
+
+# 环境配置
 NODE_ENV=development
 ```
 
@@ -188,6 +206,8 @@ pnpm dev
 
 ### 生产环境部署
 
+#### 本地部署
+
 1. **构建项目**
 ```bash
 npm run build
@@ -197,6 +217,28 @@ npm run build
 ```bash
 npm run start
 ```
+
+#### Vercel 云端部署
+
+1. **推送代码到 GitHub**
+```bash
+git add .
+git commit -m "准备部署"
+git push origin main
+```
+
+2. **在 Vercel 中部署**
+   - 访问 [Vercel](https://vercel.com)
+   - 连接 GitHub 仓库
+   - 配置环境变量：`MONGODB_URI`
+   - 一键部署
+
+3. **部署配置**
+   - 项目已包含 `vercel.json` 配置文件
+   - 自动处理构建时的类型检查问题
+   - 支持免费计划的单区域部署
+
+> 📋 详细的 Vercel 部署指南请参考项目中的 `README-DEPLOYMENT.md` 文件
 
 ## 📖 使用指南
 
@@ -410,6 +452,8 @@ A: 默认操作密码是 `csch903`。如果修改后忘记，可以：
 3. **访问控制**：建议添加身份验证和权限管理
 4. **数据备份**：定期备份重要数据
 5. **HTTPS**：生产环境使用 HTTPS 协议
+6. **环境变量**：使用 `.env.local` 管理敏感信息，不要提交到代码仓库
+7. **Vercel 部署**：在 Vercel 面板中安全配置环境变量
 
 ### 性能优化
 1. **数据库索引**：为常用查询字段添加索引
@@ -421,6 +465,7 @@ A: 默认操作密码是 `csch903`。如果修改后忘记，可以：
 - **现代浏览器**：Chrome 90+、Firefox 88+、Safari 14+、Edge 90+
 - **移动浏览器**：iOS Safari 14+、Chrome Mobile 90+
 - **不支持**：Internet Explorer
+- **推荐配置**：支持 CSS Grid、Flexbox、ES2017+ 的现代浏览器
 
 ## 📊 系统监控
 
@@ -473,9 +518,16 @@ chore: 构建过程或辅助工具的变动
 
 如有问题或建议，请通过以下方式联系：
 
-- **项目地址**：[GitHub Repository](https://github.com/your-username/hr-management-system)
-- **问题反馈**：[GitHub Issues](https://github.com/your-username/hr-management-system/issues)
-- **邮箱**：tech@chengshang.com
+- **项目地址**：[GitHub Repository](https://github.com/XUXIKAI886/renshiguanlixitong)
+- **问题反馈**：[GitHub Issues](https://github.com/XUXIKAI886/renshiguanlixitong/issues)
+- **在线演示**：[Vercel 部署地址](https://your-vercel-app.vercel.app)
+
+## 🔗 相关资源
+
+- **部署指南**：[README-DEPLOYMENT.md](README-DEPLOYMENT.md)
+- **更新日志**：[CHANGELOG.md](CHANGELOG.md)
+- **贡献指南**：[CONTRIBUTING.md](CONTRIBUTING.md)
+- **许可证**：[LICENSE](LICENSE)
 
 ---
 
