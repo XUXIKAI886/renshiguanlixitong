@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PageContainer } from '@/components/layout';
 import {
   Users,
   UserPlus,
@@ -67,10 +66,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <PageContainer
-        title="系统主页"
-        description="欢迎使用呈尚策划人事管理系统"
-      >
+      <div className="container mx-auto px-6 py-8">
         {/* 欢迎横幅 */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-8 mb-8 shadow-xl">
           <div className="absolute inset-0 bg-black/10"></div>
@@ -297,7 +293,7 @@ export default function HomePage() {
             </div>
           </CardContent>
         </Card>
-      </PageContainer>
+      </div>
     </div>
   );
 }
