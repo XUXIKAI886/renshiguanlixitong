@@ -99,7 +99,7 @@ const EmployeeSchema = new Schema<EmployeeDocument>(
       enum: {
         values: [
           '销售主管', '人事主管', '运营主管',
-          '销售', '助理', '客服', '美工', '未分配'
+          '销售', '运营', '助理', '客服', '美工', '未分配'
         ],
         message: '请选择有效的岗位'
       },

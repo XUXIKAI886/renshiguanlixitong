@@ -24,7 +24,7 @@ const updateEmployeeSchema = z.object({
   ]).optional(),
   position: z.enum([
     '销售主管', '人事主管', '运营主管',
-    '销售', '助理', '客服', '美工', '未分配'
+    '销售', '运营', '助理', '客服', '美工', '未分配'
   ]).optional(),
   totalScore: z.number().int().optional(),
 });
