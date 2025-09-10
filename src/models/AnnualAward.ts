@@ -162,8 +162,8 @@ AnnualAwardSchema.statics.generateAnnualAwards = async function(
   // 奖项配额
   const quotas = {
     special: 1,
-    first: 2,
-    second: 3,
+    first: 1,
+    second: 1,
     excellent: 5
   };
   

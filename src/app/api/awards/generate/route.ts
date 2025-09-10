@@ -62,33 +62,30 @@ export async function POST(request: NextRequest) {
       }
     ]);
 
-    // 构建员工评优数据
+    // 构建员工评优数据 - 简化为直接使用总积分排序
     const evaluationData = employees.map(employee => {
       const yearlyScoreData = yearlyScores.find(
         score => score._id === employee.employeeId
       );
       
-      // 计算最终得分：基础分(60) + 年度积分 + 总积分权重(0.1)
-      const baseScore = 60;
-      const yearlyScore = yearlyScoreData?.yearlyScore || 0;
-      const totalScoreWeight = (employee.totalScore || 0) * 0.1;
-      const finalScore = Math.max(0, baseScore + yearlyScore + totalScoreWeight);
+      // 直接使用员工总积分作为最终得分
+      const finalScore = employee.totalScore || 0;
 
       return {
         employeeId: employee.employeeId,
-        finalScore: Math.round(finalScore * 100) / 100, // 保留两位小数
-        yearlyScore,
+        finalScore: finalScore,
+        yearlyScore: yearlyScoreData?.yearlyScore || 0,
         totalScore: employee.totalScore || 0,
         recordCount: yearlyScoreData?.recordCount || 0
       };
     });
 
-    // 过滤掉得分过低的员工（最终得分低于50分不参与评优）
-    const qualifiedData = evaluationData.filter(data => data.finalScore >= 50);
+    // 过滤掉得分过低的员工（最终得分低于0分不参与评优）
+    const qualifiedData = evaluationData.filter(data => data.finalScore >= 0);
 
     if (qualifiedData.length === 0) {
       return NextResponse.json(
-        { success: false, error: `${year}年度没有符合评优条件的员工（最终得分需≥50分）` },
+        { success: false, error: `${year}年度没有符合评优条件的员工（最终得分需≥0分）` },
         { status: 400 }
       );
     }

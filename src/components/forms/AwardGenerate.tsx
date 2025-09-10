@@ -238,25 +238,21 @@ export default function AwardGenerate({ open, onOpenChange, onSuccess }: AwardGe
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="text-sm space-y-2">
-                      <p><strong>评分计算：</strong>基础分(60分) + 年度积分 + 总积分权重(×0.1)</p>
-                      <p><strong>参与条件：</strong>最终得分 ≥ 50分的在职员工</p>
+                      <p><strong>评分计算：</strong>自动统计在职员工最高积分的前三名</p>
+                      <p><strong>参与条件：</strong>最终得分 ≥ 0分的在职员工</p>
                       <p><strong>奖项配额：</strong></p>
-                      <div className="grid grid-cols-2 gap-2 ml-4">
+                      <div className="grid grid-cols-1 gap-2 ml-4">
                         <div className="flex items-center gap-2">
                           <Trophy className="h-4 w-4 text-yellow-600" />
-                          <span>特等奖：1名 (¥5,000)</span>
+                          <span>特等奖：1名 (¥5,000) - 积分第1名</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Medal className="h-4 w-4 text-orange-600" />
-                          <span>一等奖：2名 (¥3,000)</span>
+                          <span>一等奖：1名 (¥3,000) - 积分第2名</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Award className="h-4 w-4 text-blue-600" />
-                          <span>二等奖：3名 (¥2,000)</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Star className="h-4 w-4 text-green-600" />
-                          <span>优秀员工：5名 (¥1,000)</span>
+                          <span>二等奖：1名 (¥2,000) - 积分第3名</span>
                         </div>
                       </div>
                     </div>
