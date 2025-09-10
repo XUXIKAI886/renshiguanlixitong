@@ -10,9 +10,6 @@ import {
   Users,
   UserPlus,
   Award,
-  BarChart3,
-  TrendingUp,
-  Target,
   ArrowRight,
   Activity,
   Database,
@@ -38,43 +35,10 @@ const moduleCards = [
   },
 ];
 
-// 静态配置（图标和颜色）
-const quickStatsConfig = [
-  {
-    key: 'totalInterviews',
-    title: '总面试人数',
-    unit: '人',
-    icon: UserPlus,
-    color: 'text-blue-600',
-  },
-  {
-    key: 'activeEmployees',
-    title: '在职员工',
-    unit: '人',
-    icon: Users,
-    color: 'text-green-600',
-  },
-  {
-    key: 'averageScore',
-    title: '平均积分',
-    unit: '分',
-    icon: BarChart3,
-    color: 'text-purple-600',
-  },
-  {
-    key: 'trialPassRate',
-    title: '试岗通过率',
-    unit: '%',
-    icon: Target,
-    color: 'text-orange-600',
-  },
-];
 
 export default function HomePage() {
   const [systemHealth, setSystemHealth] = useState<any>(null);
   const [healthLoading, setHealthLoading] = useState(true);
-  const [dashboardStats, setDashboardStats] = useState<any>(null);
-  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     const fetchSystemHealth = async () => {
@@ -91,27 +55,11 @@ export default function HomePage() {
       }
     };
 
-    const fetchDashboardStats = async () => {
-      try {
-        const response = await fetch('/api/dashboard/stats');
-        const result = await response.json();
-        if (result.success) {
-          setDashboardStats(result.data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch dashboard stats:', error);
-      } finally {
-        setStatsLoading(false);
-      }
-    };
-
     fetchSystemHealth();
-    fetchDashboardStats();
 
-    // 每30秒刷新一次系统状态和统计数据
+    // 每30秒刷新一次系统状态
     const interval = setInterval(() => {
       fetchSystemHealth();
-      fetchDashboardStats();
     }, 30000);
 
     return () => clearInterval(interval);
@@ -134,57 +82,6 @@ export default function HomePage() {
           <div className="absolute bottom-0 left-0 -mb-8 -ml-8 h-24 w-24 rounded-full bg-white/5"></div>
         </div>
 
-        {/* 快速统计 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {quickStatsConfig.map((statConfig) => {
-          const Icon = statConfig.icon;
-          const statData = dashboardStats?.[statConfig.key];
-
-          return (
-            <Card key={statConfig.title} className="group hover:shadow-lg transition-all duration-300 border-0 bg-white/70 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-600 mb-2">
-                      {statConfig.title}
-                    </p>
-                    <div className="flex items-baseline gap-2 mb-3">
-                      <p className="text-3xl font-bold text-gray-900">
-                        {statsLoading ? (
-                          <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
-                        ) : (statData?.value || '0')}
-                      </p>
-                      <span className="text-sm font-medium text-gray-500">
-                        {statConfig.unit}
-                      </span>
-                    </div>
-                    {!statsLoading && statData && (
-                      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                        statData.isPositive 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-red-100 text-red-700'
-                      }`}>
-                        <TrendingUp className={`h-3 w-3 ${
-                          statData.isPositive ? 'text-green-600' : 'text-red-600 rotate-180'
-                        }`} />
-                        {statData.trend}
-                      </div>
-                    )}
-                  </div>
-                  <div className={`p-4 rounded-xl bg-gradient-to-br ${
-                    statConfig.color === 'text-blue-600' ? 'from-blue-500 to-blue-600' :
-                    statConfig.color === 'text-green-600' ? 'from-green-500 to-green-600' :
-                    statConfig.color === 'text-purple-600' ? 'from-purple-500 to-purple-600' :
-                    'from-orange-500 to-orange-600'
-                  } shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
-                    <Icon className="h-6 w-6 text-white" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
 
         {/* 系统健康状态 */}
         {!healthLoading && systemHealth && (
