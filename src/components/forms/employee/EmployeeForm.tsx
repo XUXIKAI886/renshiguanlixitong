@@ -5,12 +5,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Button } from '@/components/ui/basic/button';
+import { Input } from '@/components/ui/form/input';
+import { Label } from '@/components/ui/form/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/form/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form/form';
 import { Employee } from '@/types';
 import { GENDER_LABELS, WORK_STATUS_LABELS, DEPARTMENTS, POSITIONS } from '@/constants';
 

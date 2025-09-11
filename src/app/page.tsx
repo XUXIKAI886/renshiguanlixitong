@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/layout/card';
+import { Button } from '@/components/ui/basic/button';
+import { Badge } from '@/components/ui/basic/badge';
 import {
   Users,
   UserPlus,

@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
+import { Button } from '@/components/ui/basic/button';
+import { Input } from '@/components/ui/form/input';
+import { Badge } from '@/components/ui/basic/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/form/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/layout/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/layout/dropdown-menu';
 import { Search, Filter, MoreHorizontal, Edit, Trash2, RefreshCw, Download } from 'lucide-react';
 import { SCORE_BEHAVIORS } from '@/constants';
 import { exportToExcel, formatScoreDataForExport } from '@/utils/export';

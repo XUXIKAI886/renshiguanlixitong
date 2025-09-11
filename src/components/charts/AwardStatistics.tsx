@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+} from '@/components/ui/form/select';
+import { Badge } from '@/components/ui/basic/badge';
 import {
   BarChart,
   Bar,

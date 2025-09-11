@@ -5,13 +5,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Button } from '@/components/ui/basic/button';
+import { Input } from '@/components/ui/form/input';
+import { Label } from '@/components/ui/form/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/form/select';
+import { Textarea } from '@/components/ui/form/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form/form';
 import { RecruitmentRecord } from '@/types';
 import { GENDER_LABELS, TRIAL_STATUS_LABELS, RECRUITMENT_STATUS_LABELS } from '@/constants';
 
@@ -20,11 +20,19 @@ const formSchema = z.object({
   interviewDate: z.string().min(1, '面试日期不能为空'),
   candidateName: z.string().min(2, '姓名至少2个字符').max(20, '姓名最多20个字符'),
   gender: z.enum(['male', 'female'], { message: '请选择性别' }),
-  idCard: z.string().regex(/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/, '请输入有效的身份证号'),
+  age: z.string().min(1, '年龄不能为空').refine((val) => {
+    const num = parseInt(val);
+    return !isNaN(num) && num >= 16 && num <= 70 && num.toString() === val;
+  }, '年龄必须是16-70之间的整数'),
+  idCard: z.string().regex(/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/, '请输入有效的身份证号').optional(),
   phone: z.string().regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
   trialDate: z.string().optional(),
   hasTrial: z.boolean(),
-  trialDays: z.coerce.number().min(1, '试岗天数至少1天').max(90, '试岗天数最多90天').optional(),
+  trialDays: z.string().optional().refine((val) => {
+    if (!val) return true; // 可选字段，空值有效
+    const num = parseInt(val);
+    return !isNaN(num) && num >= 1 && num <= 90 && num.toString() === val;
+  }, '试岗天数必须是1-90之间的整数'),
   trialStatus: z.enum(['excellent', 'good', 'average', 'poor']).optional(),
   resignationReason: z.string().max(500, '备注内容最多500字').optional(),
   recruitmentStatus: z.enum(['interviewing', 'trial', 'hired', 'rejected']),
@@ -55,13 +63,14 @@ export default function RecruitmentForm({
         : '',
       candidateName: initialData?.candidateName || '',
       gender: initialData?.gender || 'male',
+      age: initialData?.age || '',
       idCard: initialData?.idCard || '',
       phone: initialData?.phone || '',
       trialDate: initialData?.trialDate 
         ? format(new Date(initialData.trialDate), 'yyyy-MM-dd')
         : '',
       hasTrial: initialData?.hasTrial || false,
-      trialDays: initialData?.trialDays || undefined,
+      trialDays: initialData?.trialDays || '',
       trialStatus: initialData?.trialStatus || undefined,
       resignationReason: initialData?.resignationReason || '',
       recruitmentStatus: initialData?.recruitmentStatus || 'interviewing',
@@ -72,7 +81,14 @@ export default function RecruitmentForm({
 
   const handleSubmit = async (data: FormData) => {
     try {
-      await onSubmit(data);
+      // 转换数字字段
+      const submissionData = {
+        ...data,
+        age: parseInt(data.age as string),
+        trialDays: data.trialDays ? parseInt(data.trialDays as string) : undefined
+      };
+      
+      await onSubmit(submissionData);
     } catch (error) {
       console.error('提交表单失败:', error);
     }
@@ -145,12 +161,33 @@ export default function RecruitmentForm({
 
               <FormField
                 control={form.control}
+                name="age"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>年龄 *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="请输入年龄" 
+                        min="16" 
+                        max="70"
+                        {...field} 
+                        onChange={(e) => field.onChange(e.target.value)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="idCard"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>身份证号 *</FormLabel>
+                    <FormLabel>身份证号</FormLabel>
                     <FormControl>
-                      <Input placeholder="请输入18位身份证号" {...field} />
+                      <Input placeholder="请输入18位身份证号（可选）" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

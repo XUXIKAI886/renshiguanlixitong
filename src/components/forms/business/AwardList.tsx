@@ -8,23 +8,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/components/ui/layout/table';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+} from '@/components/ui/form/select';
+import { Input } from '@/components/ui/form/input';
+import { Button } from '@/components/ui/basic/button';
+import { Badge } from '@/components/ui/basic/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/layout/dropdown-menu';
 import {
   Search,
   MoreHorizontal,

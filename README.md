@@ -2,6 +2,13 @@
 
 一个基于 Next.js 15 和 MongoDB 构建的现代化人事管理系统，提供完整的员工管理、招聘管理、积分管理和年度评优功能。
 
+[![Next.js](https://img.shields.io/badge/Next.js-15.5.2-black)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.1.0-61dafb)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://typescriptlang.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-8.18.1-green)](https://mongodb.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38bdf8)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ## 🌟 项目特色
 
 - **现代化技术栈**：Next.js 15 + TypeScript + MongoDB + Tailwind CSS 4
@@ -29,11 +36,14 @@
 ### 👥 招聘记录管理
 - **统计概览**：招聘总人数、试岗率、试岗离职率、平均试岗天数
 - **面试记录**：完整的面试信息记录和管理
+- **年龄管理**：必填年龄字段，支持16-70岁范围验证
+- **身份证管理**：身份证号改为可选字段，灵活应对不同招聘场景
 - **试岗管理**：试岗状态跟踪、试岗天数统计
 - **状态管理**：面试中、试岗中、已录用、已拒绝等状态流转
 - **隐私保护**：身份证号自动隐藏，需要密码查看完整信息
 - **权限控制**：编辑和删除操作需要密码验证
 - **数据导出**：支持 Excel 格式导出招聘数据
+- **表单优化**：防止React受控组件错误，提升用户体验
 
 ### 🏢 员工信息管理
 - **统计概览**：员工总数、在职员工数、平均在职天数、积分最多员工
@@ -100,32 +110,122 @@ hr-management-system/
 │   ├── app/                    # Next.js App Router
 │   │   ├── api/               # API 路由
 │   │   │   ├── awards/        # 年度评优 API
+│   │   │   │   ├── [id]/      # 单个奖励操作
+│   │   │   │   ├── generate/  # 奖励生成
+│   │   │   │   └── statistics/ # 奖励统计
+│   │   │   ├── dashboard/     # 仪表盘 API
 │   │   │   ├── employees/     # 员工管理 API
+│   │   │   │   ├── [id]/      # 单个员工操作
+│   │   │   │   └── overview/  # 员工概览
 │   │   │   ├── recruitment/   # 招聘管理 API
-│   │   │   └── scores/        # 积分管理 API
+│   │   │   │   ├── [id]/      # 单个招聘记录操作
+│   │   │   │   ├── overview/  # 招聘概览
+│   │   │   │   └── stats/     # 招聘统计
+│   │   │   ├── scores/        # 积分管理 API
+│   │   │   │   ├── [id]/      # 单个积分记录操作
+│   │   │   │   └── statistics/ # 积分统计
+│   │   │   └── health/        # 系统健康检查
 │   │   ├── awards/            # 年度评优页面
 │   │   ├── certificate/       # 证书页面
+│   │   │   └── [id]/         # 动态证书页面
 │   │   ├── employees/         # 员工管理页面
 │   │   ├── recruitment/       # 招聘管理页面
+│   │   │   └── dashboard/    # 招聘仪表盘
 │   │   ├── scores/            # 积分管理页面
 │   │   ├── layout.tsx         # 根布局
-│   │   └── page.tsx           # 主页
+│   │   ├── page.tsx           # 主页
+│   │   └── globals.css        # 全局样式
 │   ├── components/            # React 组件
 │   │   ├── charts/           # 图表组件
-│   │   ├── forms/            # 表单组件
+│   │   │   ├── AwardStatistics.tsx
+│   │   │   ├── RecruitmentCharts.tsx
+│   │   │   └── ScoreStatistics.tsx
+│   │   ├── forms/            # 表单组件（按模块组织）
+│   │   │   ├── business/     # 业务表单组件
+│   │   │   │   ├── AwardForm.tsx
+│   │   │   │   ├── AwardGenerate.tsx
+│   │   │   │   ├── AwardList.tsx
+│   │   │   │   ├── RecruitmentForm.tsx
+│   │   │   │   ├── RecruitmentList.tsx
+│   │   │   │   ├── ScoreForm.tsx
+│   │   │   │   └── ScoreList.tsx
+│   │   │   └── employee/     # 员工相关表单
+│   │   │       ├── EmployeeForm.tsx
+│   │   │       └── EmployeeList.tsx
 │   │   ├── layout/           # 布局组件
-│   │   └── ui/               # UI 基础组件
+│   │   │   ├── Footer.tsx
+│   │   │   ├── Header.tsx
+│   │   │   ├── Loading.tsx
+│   │   │   ├── MainLayout.tsx
+│   │   │   ├── PageContainer.tsx
+│   │   │   └── index.ts
+│   │   └── ui/               # UI 基础组件（按功能组织）
+│   │       ├── basic/        # 基础UI组件
+│   │       │   ├── button.tsx
+│   │       │   ├── badge.tsx
+│   │       │   ├── card.tsx
+│   │       │   ├── progress.tsx
+│   │       │   ├── separator.tsx
+│   │       │   ├── skeleton.tsx
+│   │       │   └── loading-spinner.tsx
+│   │       ├── form/         # 表单相关组件
+│   │       │   ├── form.tsx
+│   │       │   ├── input.tsx
+│   │       │   ├── label.tsx
+│   │       │   ├── select.tsx
+│   │       │   ├── textarea.tsx
+│   │       │   └── checkbox.tsx
+│   │       ├── layout/       # 布局相关组件
+│   │       │   ├── navigation-menu.tsx
+│   │       │   ├── sidebar.tsx
+│   │       │   ├── sheet.tsx
+│   │       │   ├── tabs.tsx
+│   │       │   └── table.tsx
+│   │       └── interaction/  # 交互组件
+│   │           ├── alert-dialog.tsx
+│   │           ├── confirm-dialog.tsx
+│   │           ├── dialog.tsx
+│   │           ├── dropdown-menu.tsx
+│   │           ├── tooltip.tsx
+│   │           ├── password-verification.tsx
+│   │           ├── certificate-template.tsx
+│   │           ├── id-card-display.tsx
+│   │           └── error-boundary.tsx
 │   ├── constants/            # 常量定义
+│   │   └── index.ts
 │   ├── hooks/                # 自定义 Hooks
+│   │   └── use-mobile.ts
 │   ├── lib/                  # 工具库
-│   ├── models/               # 数据模型
+│   │   ├── mongodb.ts        # 数据库连接
+│   │   └── utils.ts          # 通用工具
+│   ├── models/               # Mongoose 数据模型
+│   │   ├── AnnualAward.ts
+│   │   ├── Employee.ts
+│   │   ├── RecruitmentRecord.ts
+│   │   ├── ScoreRecord.ts
+│   │   └── index.ts
 │   ├── types/                # TypeScript 类型定义
+│   │   └── index.ts
 │   └── utils/                # 工具函数
+│       ├── certificate.ts    # 证书生成工具
+│       ├── export.ts         # 数据导出工具
+│       ├── performance.ts    # 性能计算工具
+│       └── index.ts
 ├── public/                   # 静态资源
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── *.svg                # 其他图标文件
 ├── package.json             # 项目依赖
+├── package-lock.json        # 依赖锁定文件
 ├── tsconfig.json           # TypeScript 配置
 ├── tailwind.config.js      # Tailwind CSS 配置
-└── next.config.ts          # Next.js 配置
+├── next.config.ts          # Next.js 配置
+├── vercel.json             # Vercel 部署配置
+├── components.json         # Shadcn/ui 组件配置
+├── CHANGELOG.md            # 更新日志
+├── CONTRIBUTING.md         # 贡献指南
+├── README-DEPLOYMENT.md    # 部署指南
+└── LICENSE                 # 许可证
 ```
 
 ## 🚀 快速开始
@@ -362,6 +462,34 @@ git push origin main
 - **后端验证**：Mongoose Schema 级别的数据验证
 - **类型安全**：TypeScript 提供编译时类型检查
 
+## 🆕 最新更新特性
+
+### v0.1.1 - 2025年9月最新版本
+
+#### 🔧 架构优化
+- **组件重构**：重新组织UI组件目录结构，提高代码可维护性
+  - `src/components/ui/` 按功能分类为 `basic/`、`form/`、`layout/`、`interaction/`
+  - `src/components/forms/` 按业务模块分类为 `employee/`、`business/`
+- **代码质量**：严格遵循文件规模控制和目录结构规范
+  - 动态语言文件 ≤ 200行，每个目录最多8个文件
+
+#### 📋 招聘管理增强
+- **年龄字段**：新增必填年龄字段，支持16-70岁范围验证
+- **身份证优化**：身份证号改为可选字段，提升使用灵活性
+- **表单改进**：修复React受控组件警告，提升用户体验
+- **数据验证**：优化Zod schema验证，支持字符串到数字的智能转换
+
+#### 🛠️ 技术修复
+- **API优化**：修复Next.js 15的params异步访问问题
+- **数据库优化**：修复Mongoose重复索引警告
+- **数据迁移**：自动为现有记录添加默认年龄字段
+- **类型安全**：完善TypeScript类型定义，减少运行时错误
+
+#### 🔍 调试支持
+- **调试日志**：完善的前后端调试日志系统
+- **错误处理**：优化错误边界和异常处理机制
+- **开发体验**：提供详细的调试信息和错误追踪
+
 ## 🔍 常见问题
 
 ### Q: 如何重置数据库？
@@ -440,9 +568,42 @@ const handlePasswordSubmit = () => {
 
 ### Q: 忘记操作密码怎么办？
 A: 默认操作密码是 `csch903`。如果修改后忘记，可以：
-1. 查看 `src/components/ui/password-verification.tsx` 文件中的密码设置
+1. 查看 `src/components/ui/interaction/password-verification.tsx` 文件中的密码设置
 2. 或者重新设置新的密码
 3. 建议将密码记录在安全的地方
+
+### Q: 更新记录时没有反应或日志没有输出？
+A: 这通常是前端缓存或网络请求问题：
+1. **强制刷新页面**：按 `Ctrl + F5` (Windows) 或 `Cmd + Shift + R` (Mac)
+2. **清除浏览器缓存**：在开发者工具中右键刷新按钮，选择"清空缓存并硬性重新加载"
+3. **检查控制台**：按 `F12` 打开开发者工具，查看Console和Network标签页
+4. **重启开发服务器**：在终端中按 `Ctrl + C` 停止服务器，然后重新运行 `npm run dev`
+
+### Q: React受控组件警告如何解决？
+A: 这个问题已经在最新版本中修复：
+1. 确保表单的 `defaultValues` 使用空字符串 `''` 而不是 `undefined`
+2. 数字字段在表单中使用字符串类型，在提交时转换为数字
+3. 如果问题仍然存在，检查表单组件中的 `onChange` 处理器
+
+### Q: 年龄字段不显示的问题？
+A: 这个问题已经修复，如果仍然遇到：
+1. 检查数据库中是否有age字段：访问 `/api/recruitment` 查看API返回数据
+2. 清除浏览器缓存并强制刷新页面
+3. 现有记录会自动添加默认年龄25岁，可以手动编辑更正
+
+### Q: API请求失败或超时？
+A: 检查以下几点：
+1. **MongoDB连接**：确保MongoDB服务正在运行
+2. **环境变量**：检查 `.env.local` 中的 `MONGODB_URI` 配置
+3. **端口冲突**：确保3000端口没有被其他程序占用
+4. **网络问题**：检查防火墙设置和网络连接
+
+### Q: 生产环境部署问题？
+A: 参考以下步骤：
+1. 确保所有环境变量在Vercel中正确配置
+2. 检查 `vercel.json` 配置文件
+3. 查看部署日志中的错误信息
+4. 确保MongoDB数据库允许外部连接
 
 ## 🚨 注意事项
 

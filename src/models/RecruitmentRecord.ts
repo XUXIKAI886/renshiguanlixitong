@@ -47,12 +47,25 @@ const RecruitmentRecordSchema = new Schema<RecruitmentRecordDocument>(
         message: '性别只能是男或女'
       }
     },
+    age: {
+      type: Number,
+      required: false, // 暂时设为可选，兼容现有数据
+      min: [16, '年龄不能小于16岁'],
+      max: [70, '年龄不能大于70岁'],
+      validate: {
+        validator: function(value: number) {
+          if (value === undefined || value === null) return true; // 允许空值
+          return Number.isInteger(value);
+        },
+        message: '年龄必须是整数'
+      }
+    },
     idCard: {
       type: String,
-      required: [true, '身份证号不能为空'],
-      unique: true,
+      required: false,
       validate: {
         validator: function(value: string) {
+          if (!value) return true; // 空值时跳过验证
           return /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/.test(value);
         },
         message: '请输入有效的身份证号'
@@ -147,7 +160,8 @@ const RecruitmentRecordSchema = new Schema<RecruitmentRecordDocument>(
 RecruitmentRecordSchema.index({ candidateName: 1 });
 RecruitmentRecordSchema.index({ interviewDate: -1 });
 RecruitmentRecordSchema.index({ recruitmentStatus: 1 });
-RecruitmentRecordSchema.index({ idCard: 1 }, { unique: true });
+RecruitmentRecordSchema.index({ age: 1 });
+RecruitmentRecordSchema.index({ idCard: 1 }, { unique: true, sparse: true }); // 稀疏索引，允许空值
 
 // 中间件：自动更新招聘状态
 RecruitmentRecordSchema.pre('save', function(next) {

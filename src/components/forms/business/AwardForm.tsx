@@ -9,7 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/ui/interaction/dialog';
 import {
   Form,
   FormControl,
@@ -17,17 +17,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from '@/components/ui/form/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+} from '@/components/ui/form/select';
+import { Input } from '@/components/ui/form/input';
+import { Button } from '@/components/ui/basic/button';
+import { Badge } from '@/components/ui/basic/badge';
 import { toast } from 'sonner';
 
 // 表单验证模式

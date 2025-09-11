@@ -9,7 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/ui/interaction/dialog';
 import {
   Form,
   FormControl,
@@ -17,18 +17,18 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from '@/components/ui/form/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+} from '@/components/ui/form/select';
+import { Button } from '@/components/ui/basic/button';
+import { Badge } from '@/components/ui/basic/badge';
+import { Checkbox } from '@/components/ui/form/checkbox';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
 import { 
   Trophy, 
   Medal, 

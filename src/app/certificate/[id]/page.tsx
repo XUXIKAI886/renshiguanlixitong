@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/basic/button';
 import { Download, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 

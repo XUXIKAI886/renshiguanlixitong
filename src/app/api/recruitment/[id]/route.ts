@@ -9,6 +9,13 @@ const updateRecruitmentRecordSchema = z.object({
   interviewDate: z.string().transform((str) => new Date(str)).optional(),
   candidateName: z.string().min(2, '姓名至少2个字符').max(20, '姓名最多20个字符').optional(),
   gender: z.enum(['male', 'female'], { message: '性别只能是男或女' }).optional(),
+  age: z.union([
+    z.number().int('年龄必须是整数').min(16, '年龄不能小于16岁').max(70, '年龄不能大于70岁'),
+    z.string().refine((val) => {
+      const num = parseInt(val);
+      return !isNaN(num) && num >= 16 && num <= 70 && num.toString() === val;
+    }, '年龄必须是16-70之间的整数').transform(val => parseInt(val))
+  ]).optional(),
   idCard: z.string().regex(/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/, '请输入有效的身份证号').optional(),
   phone: z.string().regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码').optional(),
   trialDate: z.string().transform((str) => str ? new Date(str) : undefined).optional(),
@@ -22,12 +29,12 @@ const updateRecruitmentRecordSchema = z.object({
 // GET - 获取单个招聘记录
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const { id } = params;
+    const { id } = await params;
 
     // 验证ID格式
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -63,12 +70,12 @@ export async function GET(
 // PUT - 更新招聘记录
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const { id } = params;
+    const { id } = await params;
 
     // 验证ID格式
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -151,12 +158,12 @@ export async function PUT(
 // DELETE - 删除招聘记录
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const { id } = params;
+    const { id } = await params;
 
     // 验证ID格式
     if (!mongoose.Types.ObjectId.isValid(id)) {

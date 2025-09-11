@@ -10,8 +10,8 @@ import {
   TrialPassRateChart,
   ChannelAnalysisChart
 } from '@/components/charts/RecruitmentCharts';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/form/select';
+import { Button } from '@/components/ui/basic/button';
 import { RefreshCw, Users, UserCheck, UserX, Clock } from 'lucide-react';
 
 interface DashboardData {

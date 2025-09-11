@@ -8,7 +8,8 @@ const recruitmentRecordSchema = z.object({
   interviewDate: z.string().transform((str) => new Date(str)),
   candidateName: z.string().min(2, '姓名至少2个字符').max(20, '姓名最多20个字符'),
   gender: z.enum(['male', 'female'], { message: '性别只能是男或女' }),
-  idCard: z.string().regex(/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/, '请输入有效的身份证号'),
+  age: z.number().int('年龄必须是整数').min(16, '年龄不能小于16岁').max(70, '年龄不能大于70岁'),
+  idCard: z.string().regex(/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/, '请输入有效的身份证号').optional(),
   phone: z.string().regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
   trialDate: z.string().transform((str) => str ? new Date(str) : undefined).optional(),
   hasTrial: z.boolean(),
@@ -95,16 +96,18 @@ export async function POST(request: NextRequest) {
     // 验证数据
     const validatedData = recruitmentRecordSchema.parse(body);
 
-    // 检查身份证号是否已存在
-    const existingRecord = await RecruitmentRecord.findOne({ 
-      idCard: validatedData.idCard 
-    });
-    
-    if (existingRecord) {
-      return NextResponse.json(
-        { success: false, error: '该身份证号已存在招聘记录' },
-        { status: 400 }
-      );
+    // 只有在提供身份证号时才检查是否已存在
+    if (validatedData.idCard) {
+      const existingRecord = await RecruitmentRecord.findOne({ 
+        idCard: validatedData.idCard 
+      });
+      
+      if (existingRecord) {
+        return NextResponse.json(
+          { success: false, error: '该身份证号已存在招聘记录' },
+          { status: 400 }
+        );
+      }
     }
 
     // 创建新记录

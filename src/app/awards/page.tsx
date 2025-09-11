@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
+import { Button } from '@/components/ui/basic/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/layout/tabs';
+import { Badge } from '@/components/ui/basic/badge';
 import { 
   Trophy, 
   Award, 
@@ -16,11 +16,11 @@ import {
   Download
 } from 'lucide-react';
 import { toast } from 'sonner';
-import AwardForm from '@/components/forms/AwardForm';
-import AwardList from '@/components/forms/AwardList';
+import AwardForm from '@/components/forms/business/AwardForm';
+import AwardList from '@/components/forms/business/AwardList';
 import AwardStatistics from '@/components/charts/AwardStatistics';
-import AwardGenerate from '@/components/forms/AwardGenerate';
-import CertificateGenerator from '@/components/forms/CertificateGenerator';
+import AwardGenerate from '@/components/forms/business/AwardGenerate';
+import CertificateGenerator from '@/components/forms/business/CertificateGenerator';
 
 interface OverallStats {
   totalAwards: number;

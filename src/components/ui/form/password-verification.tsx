@@ -8,10 +8,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
+} from '@/components/ui/interaction/dialog'
+import { Input } from '@/components/ui/form/input'
+import { Label } from '@/components/ui/form/label'
+import { Button } from '@/components/ui/basic/button'
 
 interface PasswordVerificationProps {
   isOpen: boolean

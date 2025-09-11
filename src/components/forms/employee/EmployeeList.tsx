@@ -2,17 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { IdCardDisplay } from '@/components/ui/id-card-display';
-import { PasswordVerification } from '@/components/ui/password-verification';
+import { Button } from '@/components/ui/basic/button';
+import { Input } from '@/components/ui/form/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/form/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/layout/table';
+import { Badge } from '@/components/ui/basic/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/interaction/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/interaction/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/layout/dropdown-menu';
+import { IdCardDisplay } from '@/components/ui/form/id-card-display';
+import { PasswordVerification } from '@/components/ui/form/password-verification';
 import {
   Search,
   Plus,
@@ -23,24 +23,24 @@ import {
   Download,
   Users,
   UserCheck,
-  UserX,
-  Clock
+  Calendar,
+  Trophy
 } from 'lucide-react';
-import { RecruitmentRecord } from '@/types';
-import { GENDER_LABELS, TRIAL_STATUS_LABELS, RECRUITMENT_STATUS_LABELS } from '@/constants';
-import { formatDate } from '@/utils';
-import { exportToExcel, formatRecruitmentDataForExport } from '@/utils/export';
+import { Employee } from '@/types';
+import { GENDER_LABELS, WORK_STATUS_LABELS, DEPARTMENTS, POSITIONS } from '@/constants';
+import { formatDate, calculateWorkingDays } from '@/utils';
+import { exportToExcel, formatEmployeeDataForExport } from '@/utils/export';
 import { toast } from 'sonner';
 
-interface RecruitmentListProps {
-  records: RecruitmentRecord[];
+interface EmployeeListProps {
+  employees: Employee[];
   total: number;
   page: number;
   limit: number;
   onPageChange: (page: number) => void;
   onSearch: (keyword: string) => void;
   onFilter: (filters: any) => void;
-  onEdit: (record: RecruitmentRecord) => void;
+  onEdit: (employee: Employee) => void;
   onDelete: (id: string) => void;
   onAdd: () => void;
   isLoading?: boolean;
@@ -48,14 +48,13 @@ interface RecruitmentListProps {
 
 // 状态颜色映射
 const statusColors = {
-  interviewing: 'bg-blue-100 text-blue-800',
-  trial: 'bg-yellow-100 text-yellow-800',
-  hired: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
+  active: 'bg-green-100 text-green-800',
+  resigned: 'bg-red-100 text-red-800',
+  leave: 'bg-yellow-100 text-yellow-800',
 };
 
-export default function RecruitmentList({
-  records,
+export default function EmployeeList({
+  employees,
   total,
   page,
   limit,
@@ -66,8 +65,10 @@ export default function RecruitmentList({
   onDelete,
   onAdd,
   isLoading = false
-}: RecruitmentListProps) {
+}: EmployeeListProps) {
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [positionFilter, setPositionFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
   const [overviewStats, setOverviewStats] = useState<any>(null);
@@ -77,7 +78,7 @@ export default function RecruitmentList({
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState<{
     type: 'edit' | 'delete';
-    record: RecruitmentRecord;
+    employee: Employee;
   } | null>(null);
 
   const totalPages = Math.ceil(total / limit);
@@ -85,7 +86,7 @@ export default function RecruitmentList({
   // 获取概览统计数据
   const fetchOverviewStats = async () => {
     try {
-      const response = await fetch('/api/recruitment/overview');
+      const response = await fetch('/api/employees/overview');
       const result = await response.json();
       if (result.success) {
         setOverviewStats(result.data);
@@ -105,9 +106,12 @@ export default function RecruitmentList({
     onSearch(searchKeyword);
   };
 
-  const handleStatusFilter = (status: string) => {
-    setStatusFilter(status);
-    onFilter({ status });
+  const handleFilter = () => {
+    onFilter({
+      department: departmentFilter !== 'all' ? departmentFilter : '',
+      position: positionFilter !== 'all' ? positionFilter : '',
+      workStatus: statusFilter !== 'all' ? statusFilter : '',
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -117,14 +121,14 @@ export default function RecruitmentList({
   };
 
   // 处理编辑操作
-  const handleEditClick = (record: RecruitmentRecord) => {
-    setPendingAction({ type: 'edit', record });
+  const handleEditClick = (employee: Employee) => {
+    setPendingAction({ type: 'edit', employee });
     setShowPasswordDialog(true);
   };
 
   // 处理删除操作
-  const handleDeleteClick = (record: RecruitmentRecord) => {
-    setPendingAction({ type: 'delete', record });
+  const handleDeleteClick = (employee: Employee) => {
+    setPendingAction({ type: 'delete', employee });
     setShowPasswordDialog(true);
   };
 
@@ -132,9 +136,9 @@ export default function RecruitmentList({
   const handlePasswordSuccess = () => {
     if (pendingAction) {
       if (pendingAction.type === 'edit') {
-        onEdit(pendingAction.record);
+        onEdit(pendingAction.employee);
       } else if (pendingAction.type === 'delete') {
-        onDelete(pendingAction.record._id!);
+        onDelete(pendingAction.employee._id!);
       }
       setPendingAction(null);
     }
@@ -148,15 +152,15 @@ export default function RecruitmentList({
 
   const handleExport = () => {
     try {
-      const formattedData = formatRecruitmentDataForExport(records);
+      const formattedData = formatEmployeeDataForExport(employees);
       const success = exportToExcel(
         formattedData,
-        `招聘记录_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '-')}`,
-        '招聘记录'
+        `员工信息_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '-')}`,
+        '员工信息'
       );
 
       if (success) {
-        toast.success('招聘记录导出成功');
+        toast.success('员工信息导出成功');
       } else {
         toast.error('导出失败，请重试');
       }
@@ -169,32 +173,32 @@ export default function RecruitmentList({
   // 统计卡片配置
   const statsConfig = [
     {
-      key: 'totalRecruitment',
-      title: '招聘总人数',
+      key: 'totalEmployees',
+      title: '员工总数',
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100'
     },
     {
-      key: 'trialRate',
-      title: '试岗率',
+      key: 'activeEmployees',
+      title: '在职员工数',
       icon: UserCheck,
       color: 'text-green-600',
       bgColor: 'bg-green-100'
     },
     {
-      key: 'trialResignationRate',
-      title: '试岗离职率',
-      icon: UserX,
-      color: 'text-red-600',
-      bgColor: 'bg-red-100'
-    },
-    {
-      key: 'avgTrialDays',
-      title: '平均试岗天数',
-      icon: Clock,
+      key: 'avgWorkDays',
+      title: '平均在职天数',
+      icon: Calendar,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100'
+    },
+    {
+      key: 'topScoreEmployee',
+      title: '积分最多员工',
+      icon: Trophy,
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-100'
     }
   ];
 
@@ -210,18 +214,37 @@ export default function RecruitmentList({
             <Card key={statConfig.key}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="flex-1">
                     <p className="text-sm font-medium text-muted-foreground">
                       {statConfig.title}
                     </p>
-                    <div className="flex items-baseline gap-1">
-                      <p className="text-2xl font-bold">
-                        {statsLoading ? '...' : (statData?.value || '0')}
-                      </p>
-                      {statData?.unit && (
-                        <span className="text-sm text-muted-foreground">
-                          {statData.unit}
-                        </span>
+                    <div className="flex items-baseline gap-1 mt-2">
+                      {statConfig.key === 'topScoreEmployee' ? (
+                        <div className="space-y-1">
+                          {statsLoading ? (
+                            <p className="text-lg font-bold">...</p>
+                          ) : statData?.value ? (
+                            <>
+                              <p className="text-lg font-bold">{statData.value.name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {statData.value.score}分 | {statData.value.department} | {statData.value.position}
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-lg font-bold">暂无数据</p>
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-2xl font-bold">
+                            {statsLoading ? '...' : (statData?.value || '0')}
+                          </p>
+                          {statData?.unit && (
+                            <span className="text-sm text-muted-foreground">
+                              {statData.unit}
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -239,7 +262,10 @@ export default function RecruitmentList({
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>招聘记录管理</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              员工信息管理
+            </CardTitle>
             <div className="flex gap-2">
               <Button onClick={handleExport} variant="outline">
                 <Download className="h-4 w-4 mr-2" />
@@ -247,7 +273,7 @@ export default function RecruitmentList({
               </Button>
               <Button onClick={onAdd}>
                 <Plus className="h-4 w-4 mr-2" />
-                新增记录
+                新增员工
               </Button>
             </div>
           </div>
@@ -257,7 +283,7 @@ export default function RecruitmentList({
             {/* 搜索框 */}
             <div className="flex-1 flex gap-2">
               <Input
-                placeholder="搜索姓名、手机号或身份证号..."
+                placeholder="搜索姓名、员工ID或手机号..."
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
                 onKeyPress={handleKeyPress}
@@ -268,15 +294,29 @@ export default function RecruitmentList({
               </Button>
             </div>
 
-            {/* 筛选器 */}
+            {/* 快速筛选器 */}
             <div className="flex gap-2">
-              <Select value={statusFilter} onValueChange={handleStatusFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="筛选状态" />
+              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="部门" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部部门</SelectItem>
+                  {DEPARTMENTS.map((dept) => (
+                    <SelectItem key={dept} value={dept}>
+                      {dept}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="状态" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">全部状态</SelectItem>
-                  {Object.entries(RECRUITMENT_STATUS_LABELS).map(([value, label]) => (
+                  {Object.entries(WORK_STATUS_LABELS).map(([value, label]) => (
                     <SelectItem key={value} value={value}>
                       {label}
                     </SelectItem>
@@ -284,9 +324,9 @@ export default function RecruitmentList({
                 </SelectContent>
               </Select>
 
-              <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+              <Button onClick={handleFilter} variant="outline">
                 <Filter className="h-4 w-4 mr-2" />
-                更多筛选
+                筛选
               </Button>
 
               <Button variant="outline">
@@ -301,35 +341,35 @@ export default function RecruitmentList({
             <div className="mt-4 p-4 border rounded-lg bg-muted/50">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-sm font-medium">面试开始日期</label>
-                  <Input type="date" className="mt-1" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">面试结束日期</label>
-                  <Input type="date" className="mt-1" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">性别</label>
-                  <Select>
+                  <label className="text-sm font-medium">岗位</label>
+                  <Select value={positionFilter} onValueChange={setPositionFilter}>
                     <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="选择性别" />
+                      <SelectValue placeholder="选择岗位" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">全部</SelectItem>
-                      {Object.entries(GENDER_LABELS).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
+                      <SelectItem value="all">全部岗位</SelectItem>
+                      {POSITIONS.map((pos) => (
+                        <SelectItem key={pos} value={pos}>
+                          {pos}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">转正开始日期</label>
+                  <Input type="date" className="mt-1" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">转正结束日期</label>
+                  <Input type="date" className="mt-1" />
                 </div>
               </div>
               <div className="flex justify-end gap-2 mt-4">
                 <Button variant="outline" onClick={() => setShowFilters(false)}>
                   取消
                 </Button>
-                <Button>应用筛选</Button>
+                <Button onClick={handleFilter}>应用筛选</Button>
               </div>
             </div>
           )}
@@ -343,18 +383,18 @@ export default function RecruitmentList({
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>员工ID</TableHead>
                   <TableHead>姓名</TableHead>
                   <TableHead>性别</TableHead>
+                  <TableHead>手机号码</TableHead>
                   <TableHead>身份证号</TableHead>
-                  <TableHead>电话</TableHead>
-                  <TableHead>面试日期</TableHead>
-                  <TableHead>是否试岗</TableHead>
-                  <TableHead>试岗日期</TableHead>
-                  <TableHead>试岗天数</TableHead>
-                  <TableHead>试岗状态</TableHead>
-                  <TableHead>备注内容</TableHead>
-                  <TableHead>招聘状态</TableHead>
-                  <TableHead>创建时间</TableHead>
+                  <TableHead>部门</TableHead>
+                  <TableHead>岗位</TableHead>
+                  <TableHead>在职状况</TableHead>
+                  <TableHead>在职天数</TableHead>
+                  <TableHead>总积分</TableHead>
+                  <TableHead>转正日期</TableHead>
+                  <TableHead>今日日期</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
@@ -365,58 +405,58 @@ export default function RecruitmentList({
                       加载中...
                     </TableCell>
                   </TableRow>
-                ) : records.length === 0 ? (
+                ) : employees.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={13} className="text-center py-8 text-muted-foreground">
                       暂无数据
                     </TableCell>
                   </TableRow>
                 ) : (
-                  records.map((record) => (
-                    <TableRow key={record._id}>
+                  employees.map((employee) => (
+                    <TableRow key={employee._id}>
                       <TableCell className="font-medium">
-                        {record.candidateName}
+                        {employee.employeeId}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {employee.name}
                       </TableCell>
                       <TableCell>
-                        {GENDER_LABELS[record.gender]}
-                      </TableCell>
-                      <TableCell>
-                        <IdCardDisplay idCard={record.idCard} />
+                        {GENDER_LABELS[employee.gender]}
                       </TableCell>
                       <TableCell className="font-mono text-sm">
-                        {record.phone}
+                        {employee.phone}
                       </TableCell>
                       <TableCell>
-                        {formatDate(record.interviewDate)}
+                        <IdCardDisplay idCard={employee.idCard} />
                       </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant={record.hasTrial ? "default" : "outline"}>
-                          {record.hasTrial ? "是" : "否"}
+                      <TableCell>
+                        {employee.department || '未分配'}
+                      </TableCell>
+                      <TableCell>
+                        {employee.position || '未分配'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={statusColors[employee.workStatus]}>
+                          {WORK_STATUS_LABELS[employee.workStatus]}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        {record.trialDate ? formatDate(record.trialDate) : '-'}
+                      <TableCell className="text-center">
+                        <span className="font-medium text-green-600">
+                          {employee.workStatus === 'active' 
+                            ? calculateWorkingDays(new Date(employee.regularDate))
+                            : employee.workingDays} 天
+                        </span>
                       </TableCell>
                       <TableCell className="text-center">
-                        {record.trialDays ? `${record.trialDays} 天` : '-'}
+                        <span className="font-medium text-blue-600">
+                          {employee.totalScore}
+                        </span>
                       </TableCell>
                       <TableCell>
-                        {record.trialStatus ? (
-                          <Badge variant="secondary">
-                            {TRIAL_STATUS_LABELS[record.trialStatus]}
-                          </Badge>
-                        ) : '-'}
-                      </TableCell>
-                      <TableCell className="max-w-32 truncate" title={record.resignationReason}>
-                        {record.resignationReason || '-'}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={statusColors[record.recruitmentStatus]}>
-                          {RECRUITMENT_STATUS_LABELS[record.recruitmentStatus]}
-                        </Badge>
+                        {formatDate(employee.regularDate)}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {record.createdAt ? formatDate(record.createdAt) : '-'}
+                        {formatDate(new Date())}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
@@ -426,13 +466,13 @@ export default function RecruitmentList({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditClick(record)}>
+                            <DropdownMenuItem onClick={() => handleEditClick(employee)}>
                               <Edit className="h-4 w-4 mr-2" />
                               编辑
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteClick(record)}>
+                            <DropdownMenuItem onClick={() => handleDeleteClick(employee)}>
                               <Trash2 className="h-4 w-4 mr-2" />
-                              删除
+                              设置离职
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -476,11 +516,11 @@ export default function RecruitmentList({
         isOpen={showPasswordDialog}
         onClose={handlePasswordClose}
         onSuccess={handlePasswordSuccess}
-        title={pendingAction?.type === 'edit' ? '编辑验证' : '删除验证'}
+        title={pendingAction?.type === 'edit' ? '编辑验证' : '离职设置验证'}
         description={
           pendingAction?.type === 'edit'
             ? '为保护数据安全，请输入编辑密码'
-            : '为保护数据安全，请输入删除密码'
+            : '为保护数据安全，请输入离职设置密码'
         }
       />
     </div>

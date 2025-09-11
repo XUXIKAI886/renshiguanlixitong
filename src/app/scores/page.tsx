@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
+import { Button } from '@/components/ui/basic/button';
+import { Badge } from '@/components/ui/basic/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/layout/tabs';
 import { Plus, TrendingUp, Users, Award, BarChart3 } from 'lucide-react';
-import { ScoreForm } from '@/components/forms/ScoreForm';
-import { ScoreList } from '@/components/forms/ScoreList';
+import { ScoreForm } from '@/components/forms/employee/ScoreForm';
+import { ScoreList } from '@/components/forms/employee/ScoreList';
 import { ScoreStatistics } from '@/components/charts/ScoreStatistics';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/interaction/dialog';
 import { toast } from 'sonner';
 
 interface ScoreRecord {

@@ -18,7 +18,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
 
 // 月度招聘趋势图
 interface MonthlyTrendProps {

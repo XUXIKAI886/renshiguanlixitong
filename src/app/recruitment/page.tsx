@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/interaction/dialog';
 import { PageContainer } from '@/components/layout';
-import RecruitmentForm from '@/components/forms/RecruitmentForm';
-import RecruitmentList from '@/components/forms/RecruitmentList';
+import RecruitmentForm from '@/components/forms/business/RecruitmentForm';
+import RecruitmentList from '@/components/forms/business/RecruitmentList';
 import { RecruitmentRecord } from '@/types';
 
 interface PaginatedResponse {

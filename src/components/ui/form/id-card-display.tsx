@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/basic/button'
 import {
   Dialog,
   DialogContent,
@@ -10,9 +10,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+} from '@/components/ui/interaction/dialog'
+import { Input } from '@/components/ui/form/input'
+import { Label } from '@/components/ui/form/label'
 
 interface IdCardDisplayProps {
   idCard: string

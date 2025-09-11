@@ -5,7 +5,8 @@ export interface RecruitmentRecord {
   candidateName: string;
   recruitmentChannel?: string;
   gender: 'male' | 'female';
-  idCard: string;
+  age: number;
+  idCard?: string;
   phone: string;
   trialDate?: Date;
   hasTrial: boolean;
