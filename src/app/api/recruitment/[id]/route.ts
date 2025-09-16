@@ -110,8 +110,14 @@ export async function PUT(
     try {
       validatedData = updateRecruitmentRecordSchema.parse(body);
       
+      // 处理身份证号：将空字符串转换为null，避免MongoDB唯一索引冲突
+      if (validatedData.idCard === '' || !validatedData.idCard) {
+        validatedData.idCard = null;
+      }
+      
       console.log('=== 验证后的数据 ===');
       console.log('appliedPosition:', validatedData.appliedPosition);
+      console.log('处理后的身份证号:', validatedData.idCard);
       console.log('完整验证数据:', validatedData);
     } catch (validationError) {
       console.error('=== Zod验证失败 ===');

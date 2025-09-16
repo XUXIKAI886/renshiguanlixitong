@@ -139,6 +139,11 @@ export async function POST(request: NextRequest) {
     // 验证数据
     const validatedData = recruitmentRecordSchema.parse(body);
 
+    // 处理身份证号：将空字符串转换为null，避免MongoDB唯一索引冲突
+    if (validatedData.idCard === '' || !validatedData.idCard) {
+      validatedData.idCard = null;
+    }
+
     // 只有在提供身份证号时才检查是否已存在
     if (validatedData.idCard) {
       const existingRecord = await RecruitmentRecord.findOne({ 
@@ -152,6 +157,10 @@ export async function POST(request: NextRequest) {
         );
       }
     }
+
+    console.log('=== 准备创建招聘记录 ===');
+    console.log('处理后的身份证号:', validatedData.idCard);
+    console.log('完整验证数据:', validatedData);
 
     // 创建新记录
     const newRecord = new RecruitmentRecord(validatedData);
