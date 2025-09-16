@@ -427,8 +427,10 @@ export default function RecruitmentList({
                           </Badge>
                         ) : '-'}
                       </TableCell>
-                      <TableCell className="max-w-32 truncate" title={record.resignationReason}>
-                        {record.resignationReason || '-'}
+                      <TableCell className="max-w-48 min-w-32">
+                        <div className="whitespace-normal break-words text-sm leading-relaxed">
+                          {record.resignationReason || '-'}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge className={statusColors[record.recruitmentStatus]}>
