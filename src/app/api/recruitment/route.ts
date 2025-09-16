@@ -144,18 +144,34 @@ export async function POST(request: NextRequest) {
       validatedData.idCard = null;
     }
 
-    // 只有在提供身份证号时才检查是否已存在
+    // 检查身份证号是否重复（只有在提供身份证号时才检查）
     if (validatedData.idCard) {
-      const existingRecord = await RecruitmentRecord.findOne({ 
+      const existingIdCardRecord = await RecruitmentRecord.findOne({ 
         idCard: validatedData.idCard 
       });
       
-      if (existingRecord) {
+      if (existingIdCardRecord) {
         return NextResponse.json(
           { success: false, error: '该身份证号已存在招聘记录' },
           { status: 400 }
         );
       }
+    }
+
+    // 检查手机号是否重复
+    const existingPhoneRecord = await RecruitmentRecord.findOne({ 
+      phone: validatedData.phone 
+    });
+    
+    if (existingPhoneRecord) {
+      console.log('=== 手机号重复检查 ===');
+      console.log('重复的手机号:', validatedData.phone);
+      console.log('已存在的记录:', existingPhoneRecord);
+      
+      return NextResponse.json(
+        { success: false, error: `手机号 ${validatedData.phone} 已存在招聘记录，应聘者：${existingPhoneRecord.candidateName}` },
+        { status: 400 }
+      );
     }
 
     console.log('=== 准备创建招聘记录 ===');
@@ -187,10 +203,28 @@ export async function POST(request: NextRequest) {
     }
 
     if (error.code === 11000) {
-      return NextResponse.json(
-        { success: false, error: '身份证号或手机号已存在' },
-        { status: 400 }
-      );
+      console.log('=== MongoDB唯一索引冲突 ===');
+      console.log('错误详情:', error);
+      console.log('keyPattern:', error.keyPattern);
+      console.log('keyValue:', error.keyValue);
+      
+      // 根据具体的字段给出更准确的错误信息
+      if (error.keyPattern?.idCard) {
+        return NextResponse.json(
+          { success: false, error: '身份证号已存在' },
+          { status: 400 }
+        );
+      } else if (error.keyPattern?.phone) {
+        return NextResponse.json(
+          { success: false, error: '手机号已存在' },
+          { status: 400 }
+        );
+      } else {
+        return NextResponse.json(
+          { success: false, error: '数据重复，可能是身份证号或手机号已存在' },
+          { status: 400 }
+        );
+      }
     }
 
     return NextResponse.json(
