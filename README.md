@@ -26,7 +26,7 @@
 - **证书生成**：支持生成和打印专业的获奖证书
 - **数据导出**：支持 Excel 格式的数据导出功能
 - **开发友好**：完整的调试日志链路，详细的错误诊断信息
-- **问题修复能力**：专业的调试工具集，一键解决数据库索引问题
+- **问题修复能力**：根本性解决方案，从Schema级别消除数据库索引问题
 - **用户体验优化**：备注内容完整显示，表格信息查看更便捷
 
 ## 🚀 核心功能
@@ -145,6 +145,9 @@ hr-management-system/
 │   │   │   │   └── recruitment-position/ # 招聘岗位字段修复
 │   │   │   ├── migrate/       # 数据迁移 API  
 │   │   │   │   └── recruitment-position/ # 招聘岗位字段迁移
+│   │   │   ├── debug/         # 调试工具 API (v0.1.7已清理大部分)
+│   │   │   │   ├── check-phone/ # 手机号重复检查（保留）
+│   │   │   │   └── force-clean-idcard/ # 索引强制清理（备用）
 │   │   │   └── health/        # 系统健康检查
 │   │   ├── awards/            # 年度评优页面
 │   │   ├── certificate/       # 证书页面
@@ -490,7 +493,17 @@ git push origin main
 
 ## 🆕 最新更新特性
 
-### v0.1.6 - 2025年9月16日最新版本
+### v0.1.7 - 2025年9月16日最新版本
+
+#### 🧹 代码清理与优化
+- **调试工具清理**：清理不再需要的临时调试API文件
+  - 移除过时的索引修复工具：`cleanup-null-idcard`、`fix-indexes` 等
+  - 移除实验性工具：`deep-inspect`、`rebuild-idcard-index` 等
+  - 保留核心工具：`check-phone`、`force-clean-idcard`（备用）
+- **文档更新**：同步更新README，移除过时API引用
+- **系统稳定性**：根本问题已解决，系统运行稳定
+
+### v0.1.6 - 2025年9月16日版本
 
 #### 🎯 Schema级别根本性修复
 - **问题根源发现**：Mongoose Schema中定义的唯一稀疏索引每次启动时自动创建
@@ -502,9 +515,6 @@ git push origin main
   - 彻底解决MongoDB稀疏索引对null值的唯一性约束问题
   - 支持创建无限个空身份证号的招聘记录
   - 保持查询性能的同时消除数据冲突
-- **新增深度调试API**：
-  - `/api/debug/deep-inspect` - 深度检查数据库状态和索引详情
-  - `/api/debug/force-clean-idcard` - 强制清理所有身份证号相关索引
 - **验证成功**：连续创建多个空身份证号记录，E11000错误完全消除
 
 ### v0.1.5 - 2025年9月16日版本
@@ -516,10 +526,7 @@ git push origin main
   - 移除身份证号唯一索引，创建普通索引提升查询性能
   - API层面对非空身份证号进行重复性检查
   - 支持创建无限个空身份证号的招聘记录
-- **新增调试API**：
-  - `/api/debug/remove-idcard-index` - 移除身份证唯一索引约束
-  - `/api/debug/rebuild-idcard-index` - 重建索引（已废弃）
-  - `/api/debug/fix-partial-index` - 部分索引方案（实验性）
+- **临时调试方案**：创建了多个实验性API工具（已在v0.1.7版本中清理）
 - **问题根源解析**：详细说明MongoDB稀疏索引对null值的唯一性约束特性
 
 ### v0.1.4 - 2025年9月16日版本
@@ -545,10 +552,8 @@ git push origin main
 
 ##### 🛠️ 开发调试工具集
 - **新增专业调试API**：提供完整的问题诊断和修复能力
-  - `/api/debug/check-phone` - 检查手机号是否存在重复
-  - `/api/debug/check-indexes` - 检查数据库索引配置状态  
-  - `/api/debug/fix-indexes` - 一键修复索引配置问题
-  - `/api/debug/cleanup-null-idcard` - 清理重复的null身份证号记录
+  - `/api/debug/check-phone` - 检查手机号是否存在重复（保留）
+  - 其他临时调试API已在v0.1.7版本中清理，根本问题已解决
 
 ### v0.1.3 - 2025年9月16日版本
 
@@ -767,11 +772,11 @@ A: v0.1.4版本已优化备注内容显示：
 4. **如果问题仍存在**：刷新页面或清除浏览器缓存
 
 ### Q: 身份证号null值索引冲突如何解决？
-A: 这是数据库稀疏索引配置问题，已提供完整解决方案：
-1. **问题诊断**：访问`/api/debug/cleanup-null-idcard`检查冲突记录
-2. **数据清理**：POST请求`/api/debug/cleanup-null-idcard`清理重复记录  
-3. **索引修复**：POST请求`/api/debug/fix-indexes`重建正确索引
-4. **验证结果**：修复后可正常创建多个无身份证招聘记录
+A: **v0.1.6版本已从根本解决** - 修改了Mongoose Schema索引定义：
+1. **根本修复**：`src/models/RecruitmentRecord.ts` 中移除了唯一索引约束
+2. **无需调试API**：问题从Schema级别根本解决，不再需要临时修复工具
+3. **自动生效**：更新到最新版本后，重启应用即可正常使用
+4. **验证结果**：可以正常创建无限个空身份证招聘记录
 
 ### Q: 稀疏索引仍然出现null值冲突？
 A: **v0.1.6版本根本性解决方案** - 修改Mongoose Schema索引定义：
