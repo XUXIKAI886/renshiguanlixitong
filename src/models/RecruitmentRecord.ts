@@ -174,7 +174,7 @@ RecruitmentRecordSchema.index({ interviewDate: -1 });
 RecruitmentRecordSchema.index({ recruitmentStatus: 1 });
 RecruitmentRecordSchema.index({ age: 1 });
 RecruitmentRecordSchema.index({ appliedPosition: 1 }); // 新增应聘岗位索引
-RecruitmentRecordSchema.index({ idCard: 1 }, { unique: true, sparse: true }); // 稀疏索引，允许空值
+RecruitmentRecordSchema.index({ idCard: 1 }); // 普通索引，提升查询性能，不强制唯一性
 
 // 中间件：自动更新招聘状态
 RecruitmentRecordSchema.pre('save', function(next) {
