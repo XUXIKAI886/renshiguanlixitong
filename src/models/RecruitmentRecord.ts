@@ -81,6 +81,18 @@ const RecruitmentRecordSchema = new Schema<RecruitmentRecordDocument>(
         message: '请输入有效的手机号码'
       }
     },
+    appliedPosition: {
+      type: String,
+      trim: true,
+      enum: {
+        values: [
+          '销售主管', '人事主管', '运营主管',
+          '销售', '运营', '助理', '客服', '美工', '未分配'
+        ],
+        message: '请选择有效的应聘岗位'
+      },
+      default: '未分配'
+    },
     trialDate: {
       type: Date,
       validate: {
@@ -161,6 +173,7 @@ RecruitmentRecordSchema.index({ candidateName: 1 });
 RecruitmentRecordSchema.index({ interviewDate: -1 });
 RecruitmentRecordSchema.index({ recruitmentStatus: 1 });
 RecruitmentRecordSchema.index({ age: 1 });
+RecruitmentRecordSchema.index({ appliedPosition: 1 }); // 新增应聘岗位索引
 RecruitmentRecordSchema.index({ idCard: 1 }, { unique: true, sparse: true }); // 稀疏索引，允许空值
 
 // 中间件：自动更新招聘状态

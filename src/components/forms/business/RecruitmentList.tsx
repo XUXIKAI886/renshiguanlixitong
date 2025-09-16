@@ -348,6 +348,7 @@ export default function RecruitmentList({
                   <TableHead>年龄</TableHead>
                   <TableHead>身份证号</TableHead>
                   <TableHead>电话</TableHead>
+                  <TableHead>应聘岗位</TableHead>
                   <TableHead>面试日期</TableHead>
                   <TableHead>是否试岗</TableHead>
                   <TableHead>试岗日期</TableHead>
@@ -362,13 +363,13 @@ export default function RecruitmentList({
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={13} className="text-center py-8">
+                    <TableCell colSpan={14} className="text-center py-8">
                       加载中...
                     </TableCell>
                   </TableRow>
                 ) : records.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={13} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={14} className="text-center py-8 text-muted-foreground">
                       暂无数据
                     </TableCell>
                   </TableRow>
@@ -399,6 +400,11 @@ export default function RecruitmentList({
                       </TableCell>
                       <TableCell className="font-mono text-sm">
                         {record.phone}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {record.appliedPosition || '未分配'}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         {formatDate(record.interviewDate)}

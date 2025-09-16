@@ -90,6 +90,10 @@ export default function RecruitmentPage() {
   const handleUpdate = async (data: any) => {
     if (!editingRecord?._id) return;
 
+    console.log('=== 页面层更新请求数据 ===');
+    console.log('appliedPosition:', data.appliedPosition);
+    console.log('完整数据:', data);
+
     try {
       const response = await fetch(`/api/recruitment/${editingRecord._id}`, {
         method: 'PUT',
@@ -100,12 +104,19 @@ export default function RecruitmentPage() {
       });
 
       const result = await response.json();
+      
+      console.log('=== 更新API响应结果 ===');
+      console.log('appliedPosition:', result.data?.appliedPosition);
+      console.log('完整响应:', result);
 
       if (result.success) {
         toast.success('招聘记录更新成功');
         setIsFormOpen(false);
         setEditingRecord(null);
-        fetchRecords();
+        
+        console.log('=== 准备刷新列表 ===');
+        await fetchRecords();
+        console.log('=== 列表刷新完成 ===');
       } else {
         toast.error(result.error || '更新失败');
       }

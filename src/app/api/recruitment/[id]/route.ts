@@ -16,11 +16,25 @@ const updateRecruitmentRecordSchema = z.object({
       return !isNaN(num) && num >= 16 && num <= 70 && num.toString() === val;
     }, '年龄必须是16-70之间的整数').transform(val => parseInt(val))
   ]).optional(),
-  idCard: z.string().regex(/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/, '请输入有效的身份证号').optional(),
+  idCard: z.string().optional().refine((val) => {
+    if (!val || val.trim() === '') return true; // 空值时通过验证
+    return /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/.test(val);
+  }, '请输入有效的身份证号'),
   phone: z.string().regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码').optional(),
+  appliedPosition: z.enum([
+    '销售主管', '人事主管', '运营主管',
+    '销售', '运营', '助理', '客服', '美工', '未分配'
+  ]).optional(),
   trialDate: z.string().transform((str) => str ? new Date(str) : undefined).optional(),
   hasTrial: z.boolean().optional(),
-  trialDays: z.number().min(1, '试岗天数至少1天').max(90, '试岗天数最多90天').optional(),
+  trialDays: z.union([
+    z.number().int('试岗天数必须是整数').min(1, '试岗天数至少1天').max(90, '试岗天数最多90天'),
+    z.string().refine((val) => {
+      if (!val || val.trim() === '') return true; // 空值允许
+      const num = parseInt(val);
+      return !isNaN(num) && num >= 1 && num <= 90 && num.toString() === val;
+    }, '试岗天数必须是1-90之间的整数').transform(val => val ? parseInt(val) : undefined)
+  ]).optional(),
   trialStatus: z.enum(['excellent', 'good', 'average', 'poor']).optional(),
   resignationReason: z.string().max(500, '备注内容最多500字').optional(),
   recruitmentStatus: z.enum(['interviewing', 'trial', 'hired', 'rejected']).optional(),
@@ -87,8 +101,23 @@ export async function PUT(
 
     const body = await request.json();
     
+    console.log('=== 后端API收到的数据 ===');
+    console.log('appliedPosition:', body.appliedPosition);
+    console.log('完整请求数据:', body);
+    
     // 验证数据
-    const validatedData = updateRecruitmentRecordSchema.parse(body);
+    let validatedData;
+    try {
+      validatedData = updateRecruitmentRecordSchema.parse(body);
+      
+      console.log('=== 验证后的数据 ===');
+      console.log('appliedPosition:', validatedData.appliedPosition);
+      console.log('完整验证数据:', validatedData);
+    } catch (validationError) {
+      console.error('=== Zod验证失败 ===');
+      console.error('验证错误:', validationError);
+      throw validationError;
+    }
 
     // 检查记录是否存在
     const existingRecord = await RecruitmentRecord.findById(id);
@@ -114,12 +143,33 @@ export async function PUT(
       }
     }
 
-    // 更新记录
+    console.log('=== 准备更新数据库 ===');
+    console.log('更新的数据:', validatedData);
+    console.log('更新的记录ID:', id);
+    
+    // 首先确保记录有appliedPosition字段，如果没有则添加默认值
+    await RecruitmentRecord.updateOne(
+      { _id: id, appliedPosition: { $exists: false } },
+      { $set: { appliedPosition: '未分配' } }
+    );
+    
+    // 更新记录 - 使用$set确保字段被正确更新
     const updatedRecord = await RecruitmentRecord.findByIdAndUpdate(
       id,
-      validatedData,
-      { new: true, runValidators: true }
+      { $set: validatedData },
+      { new: true, runValidators: true, upsert: false }
     );
+
+    console.log('=== 数据库更新后的结果 ===');
+    console.log('updatedRecord存在:', !!updatedRecord);
+    console.log('updatedRecord.appliedPosition:', updatedRecord?.appliedPosition);
+    console.log('完整更新记录:', updatedRecord);
+    
+    // 验证数据库中是否真的更新了
+    const verifyRecord = await RecruitmentRecord.findById(id);
+    console.log('=== 验证数据库记录 ===');
+    console.log('verifyRecord.appliedPosition:', verifyRecord?.appliedPosition);
+    console.log('验证记录:', verifyRecord);
 
     return NextResponse.json({
       success: true,

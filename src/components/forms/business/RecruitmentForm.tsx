@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/form/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form/form';
 import { RecruitmentRecord } from '@/types';
-import { GENDER_LABELS, TRIAL_STATUS_LABELS, RECRUITMENT_STATUS_LABELS } from '@/constants';
+import { GENDER_LABELS, TRIAL_STATUS_LABELS, RECRUITMENT_STATUS_LABELS, POSITIONS } from '@/constants';
 
 // 表单验证模式
 const formSchema = z.object({
@@ -24,8 +24,12 @@ const formSchema = z.object({
     const num = parseInt(val);
     return !isNaN(num) && num >= 16 && num <= 70 && num.toString() === val;
   }, '年龄必须是16-70之间的整数'),
-  idCard: z.string().regex(/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/, '请输入有效的身份证号').optional(),
+  idCard: z.string().optional().refine((val) => {
+    if (!val || val.trim() === '') return true; // 空值时通过验证
+    return /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/.test(val);
+  }, '请输入有效的身份证号'),
   phone: z.string().regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
+  appliedPosition: z.string().default('未分配'),
   trialDate: z.string().optional(),
   hasTrial: z.boolean(),
   trialDays: z.string().optional().refine((val) => {
@@ -63,14 +67,15 @@ export default function RecruitmentForm({
         : '',
       candidateName: initialData?.candidateName || '',
       gender: initialData?.gender || 'male',
-      age: initialData?.age || '',
+      age: initialData?.age?.toString() || '',
       idCard: initialData?.idCard || '',
       phone: initialData?.phone || '',
+      appliedPosition: initialData?.appliedPosition || '未分配',
       trialDate: initialData?.trialDate 
         ? format(new Date(initialData.trialDate), 'yyyy-MM-dd')
         : '',
       hasTrial: initialData?.hasTrial || false,
-      trialDays: initialData?.trialDays || '',
+      trialDays: initialData?.trialDays?.toString() || '',
       trialStatus: initialData?.trialStatus || undefined,
       resignationReason: initialData?.resignationReason || '',
       recruitmentStatus: initialData?.recruitmentStatus || 'interviewing',
@@ -87,6 +92,10 @@ export default function RecruitmentForm({
         age: parseInt(data.age as string),
         trialDays: data.trialDays ? parseInt(data.trialDays as string) : undefined
       };
+      
+      console.log('=== 前端表单提交数据 ===');
+      console.log('appliedPosition:', submissionData.appliedPosition);
+      console.log('完整数据:', submissionData);
       
       await onSubmit(submissionData);
     } catch (error) {
@@ -203,6 +212,32 @@ export default function RecruitmentForm({
                     <FormControl>
                       <Input placeholder="请输入11位手机号" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="appliedPosition"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>应聘岗位</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="请选择应聘岗位" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="未分配">未分配</SelectItem>
+                        {POSITIONS.map((position) => (
+                          <SelectItem key={position} value={position}>
+                            {position}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

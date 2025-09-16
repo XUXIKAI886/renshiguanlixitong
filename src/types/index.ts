@@ -8,6 +8,7 @@ export interface RecruitmentRecord {
   age: number;
   idCard?: string;
   phone: string;
+  appliedPosition?: string; // 新增：应聘岗位
   trialDate?: Date;
   hasTrial: boolean;
   trialDays?: number;

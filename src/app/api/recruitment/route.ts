@@ -9,11 +9,25 @@ const recruitmentRecordSchema = z.object({
   candidateName: z.string().min(2, '姓名至少2个字符').max(20, '姓名最多20个字符'),
   gender: z.enum(['male', 'female'], { message: '性别只能是男或女' }),
   age: z.number().int('年龄必须是整数').min(16, '年龄不能小于16岁').max(70, '年龄不能大于70岁'),
-  idCard: z.string().regex(/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/, '请输入有效的身份证号').optional(),
+  idCard: z.string().optional().refine((val) => {
+    if (!val || val.trim() === '') return true; // 空值时通过验证
+    return /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/.test(val);
+  }, '请输入有效的身份证号'),
   phone: z.string().regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
+  appliedPosition: z.enum([
+    '销售主管', '人事主管', '运营主管',
+    '销售', '运营', '助理', '客服', '美工', '未分配'
+  ]).default('未分配'),
   trialDate: z.string().transform((str) => str ? new Date(str) : undefined).optional(),
   hasTrial: z.boolean(),
-  trialDays: z.number().min(1, '试岗天数至少1天').max(90, '试岗天数最多90天').optional(),
+  trialDays: z.union([
+    z.number().int('试岗天数必须是整数').min(1, '试岗天数至少1天').max(90, '试岗天数最多90天'),
+    z.string().refine((val) => {
+      if (!val || val.trim() === '') return true; // 空值允许
+      const num = parseInt(val);
+      return !isNaN(num) && num >= 1 && num <= 90 && num.toString() === val;
+    }, '试岗天数必须是1-90之间的整数').transform(val => val ? parseInt(val) : undefined)
+  ]).optional(),
   trialStatus: z.enum(['excellent', 'good', 'average', 'poor']).optional(),
   resignationReason: z.string().max(500, '备注内容最多500字').optional(),
   recruitmentStatus: z.enum(['interviewing', 'trial', 'hired', 'rejected']).default('interviewing'),
@@ -53,6 +67,28 @@ export async function GET(request: NextRequest) {
       if (endDate) query.interviewDate.$lte = new Date(endDate);
     }
 
+    // 确保所有记录都有appliedPosition字段
+    console.log('=== 检查并修复appliedPosition字段 ===');
+    
+    const missingFieldCount = await RecruitmentRecord.countDocuments({
+      appliedPosition: { $exists: false }
+    });
+    console.log('缺少appliedPosition字段的记录数:', missingFieldCount);
+    
+    if (missingFieldCount > 0) {
+      const updateResult = await RecruitmentRecord.updateMany(
+        { appliedPosition: { $exists: false } },
+        { $set: { appliedPosition: '未分配' } }
+      );
+      console.log('批量更新结果:', updateResult);
+    }
+    
+    // 再次检查是否还有缺失的记录
+    const stillMissingCount = await RecruitmentRecord.countDocuments({
+      appliedPosition: { $exists: false }
+    });
+    console.log('修复后仍缺少字段的记录数:', stillMissingCount);
+    
     // 分页查询
     const skip = (page - 1) * limit;
     const [records, total] = await Promise.all([
@@ -63,6 +99,13 @@ export async function GET(request: NextRequest) {
         .lean(),
       RecruitmentRecord.countDocuments(query)
     ]);
+
+    console.log('=== 查询招聘记录列表 ===');
+    console.log('记录数量:', records.length);
+    if (records.length > 0) {
+      console.log('第一条记录的appliedPosition:', records[0]?.appliedPosition);
+      console.log('第一条记录完整数据:', records[0]);
+    }
 
     return NextResponse.json({
       success: true,
