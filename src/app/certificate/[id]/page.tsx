@@ -29,20 +29,23 @@ const AWARD_CONFIGS = {
     title: '特等奖',
     color: '#FFD700',
     bgColor: 'from-yellow-50 to-yellow-100',
+    textColor: '#B45309',
     description: '年度最佳员工',
     icon: '🏆'
   },
   first: {
     title: '一等奖',
-    color: '#C0C0C0',
-    bgColor: 'from-gray-50 to-gray-100',
+    color: '#E53E3E',
+    bgColor: 'from-red-50 to-red-100',
+    textColor: '#B91C1C',
     description: '年度优秀员工',
     icon: '🥇'
   },
   second: {
     title: '二等奖',
-    color: '#CD7F32',
-    bgColor: 'from-orange-50 to-orange-100',
+    color: '#3182CE',
+    bgColor: 'from-blue-50 to-blue-100',
+    textColor: '#1E40AF',
     description: '年度表现优异员工',
     icon: '🥈'
   },
@@ -50,6 +53,7 @@ const AWARD_CONFIGS = {
     title: '优秀员工',
     color: '#4CAF50',
     bgColor: 'from-green-50 to-green-100',
+    textColor: '#166534',
     description: '年度优秀员工',
     icon: '⭐'
   }
@@ -246,12 +250,12 @@ export default function CertificatePage() {
             {/* 上半部分 */}
             <div className="flex flex-col items-center space-y-4">
               {/* 标题 */}
-              <h1 className="text-4xl font-bold text-gray-800 tracking-widest">
+              <h1 className="text-4xl font-bold tracking-widest" style={{ color: awardConfig.textColor }}>
                 获奖证书
               </h1>
 
               {/* 副标题 */}
-              <p className="text-base text-gray-600 tracking-wider">
+              <p className="text-base tracking-wider" style={{ color: awardConfig.textColor, opacity: 0.8 }}>
                 呈尚策划2025年度评选
               </p>
 
@@ -265,18 +269,18 @@ export default function CertificatePage() {
               </div>
 
               {/* 获奖者姓名 */}
-              <div className="text-2xl font-bold text-gray-800 tracking-wider">
+              <div className="text-2xl font-bold tracking-wider" style={{ color: awardConfig.textColor }}>
                 {award.employeeId.name} 同志
               </div>
 
               {/* 获奖描述 */}
-              <p className="text-lg text-gray-700 leading-relaxed max-w-lg">
+              <p className="text-lg leading-relaxed max-w-lg" style={{ color: awardConfig.textColor }}>
                 在{award.year}年度工作中表现优异，获得{awardConfig.description}称号
               </p>
             </div>
 
             {/* 中间部分 - 详细信息 */}
-            <div className="text-sm text-gray-600 space-y-1 leading-relaxed">
+            <div className="text-sm space-y-1 leading-relaxed" style={{ color: awardConfig.textColor, opacity: 0.9 }}>
               <div>员工编号：{award.employeeId.employeeId}</div>
               <div>所属部门：{award.employeeId.department}</div>
               <div>岗位职务：{award.employeeId.position}</div>
@@ -288,13 +292,13 @@ export default function CertificatePage() {
             {/* 底部信息 */}
             <div className="flex justify-between items-center w-full">
               {/* 颁发日期 */}
-              <div className="text-sm text-gray-700">
+              <div className="text-sm" style={{ color: awardConfig.textColor, opacity: 0.8 }}>
                 颁发日期：{currentDate}
               </div>
 
               {/* 公司信息和印章 */}
               <div className="flex items-center gap-4">
-                <div className="text-lg font-bold text-gray-800">
+                <div className="text-lg font-bold" style={{ color: awardConfig.textColor }}>
                   呈尚策划有限公司
                 </div>
 

@@ -19,24 +19,32 @@ const AWARD_CONFIGS = {
   special: {
     title: '特等奖',
     color: '#FFD700', // 金色
+    bgColor: '#FFFEF7',
+    textColor: '#B45309',
     description: '年度最佳员工',
     icon: '🏆'
   },
   first: {
     title: '一等奖',
-    color: '#C0C0C0', // 银色
+    color: '#E53E3E', // 鲜艳红色
+    bgColor: '#FEF2F2',
+    textColor: '#B91C1C',
     description: '年度优秀员工',
     icon: '🥇'
   },
   second: {
     title: '二等奖',
-    color: '#CD7F32', // 铜色
+    color: '#3182CE', // 鲜艳蓝色
+    bgColor: '#EBF8FF',
+    textColor: '#1E40AF',
     description: '年度表现优异员工',
     icon: '🥈'
   },
   excellent: {
     title: '优秀员工',
     color: '#4CAF50', // 绿色
+    bgColor: '#F8FFF8',
+    textColor: '#166534',
     description: '年度优秀员工',
     icon: '⭐'
   }
@@ -86,13 +94,13 @@ function drawCertificateOnCanvas(data: CertificateData): HTMLCanvasElement {
   let currentY = 300;
 
   // 标题 "获奖证书"
-  ctx.fillStyle = '#333333';
+  ctx.fillStyle = awardConfig.textColor;
   ctx.font = 'bold 120px Arial, "Microsoft YaHei", sans-serif';
   ctx.fillText('获奖证书', width / 2, currentY);
   currentY += 150;
 
   // 副标题
-  ctx.fillStyle = '#666666';
+  ctx.fillStyle = awardConfig.textColor;
   ctx.font = '48px Arial, "Microsoft YaHei", sans-serif';
   ctx.fillText('呈尚策划人事管理系统', width / 2, currentY);
   currentY += 120;
@@ -104,19 +112,19 @@ function drawCertificateOnCanvas(data: CertificateData): HTMLCanvasElement {
   currentY += 140;
 
   // 获奖者姓名
-  ctx.fillStyle = '#333333';
+  ctx.fillStyle = awardConfig.textColor;
   ctx.font = 'bold 80px Arial, "Microsoft YaHei", sans-serif';
   ctx.fillText(`${data.employeeName} 同志`, width / 2, currentY);
   currentY += 100;
 
   // 获奖描述
-  ctx.fillStyle = '#333333';
+  ctx.fillStyle = awardConfig.textColor;
   ctx.font = '50px Arial, "Microsoft YaHei", sans-serif';
   ctx.fillText(`在${data.year}年度工作中表现优异，获得${awardConfig.description}称号`, width / 2, currentY);
   currentY += 120;
 
   // 详细信息
-  ctx.fillStyle = '#666666';
+  ctx.fillStyle = awardConfig.textColor;
   ctx.font = '40px Arial, "Microsoft YaHei", sans-serif';
 
   const details = [
@@ -135,7 +143,7 @@ function drawCertificateOnCanvas(data: CertificateData): HTMLCanvasElement {
   currentY += details.length * 60 + 120;
 
   // 底部信息
-  ctx.fillStyle = '#333333';
+  ctx.fillStyle = awardConfig.textColor;
   ctx.font = '40px Arial, "Microsoft YaHei", sans-serif';
 
   // 颁发日期 (左对齐)

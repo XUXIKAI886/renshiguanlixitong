@@ -11,20 +11,23 @@ const AWARD_CONFIGS = {
     title: '特等奖',
     color: '#FFD700',
     bgColor: '#FFFEF7',
+    textColor: '#B45309',
     description: '年度最佳员工',
     icon: '🏆'
   },
   first: {
     title: '一等奖',
-    color: '#C0C0C0',
-    bgColor: '#FAFAFA',
+    color: '#E53E3E',
+    bgColor: '#FEF2F2',
+    textColor: '#B91C1C',
     description: '年度优秀员工',
     icon: '🥇'
   },
   second: {
     title: '二等奖',
-    color: '#CD7F32',
-    bgColor: '#FFF8F0',
+    color: '#3182CE',
+    bgColor: '#EBF8FF',
+    textColor: '#1E40AF',
     description: '年度表现优异员工',
     icon: '🥈'
   },
@@ -32,6 +35,7 @@ const AWARD_CONFIGS = {
     title: '优秀员工',
     color: '#4CAF50',
     bgColor: '#F8FFF8',
+    textColor: '#166534',
     description: '年度优秀员工',
     icon: '⭐'
   }
@@ -91,7 +95,7 @@ export default function CertificateTemplate({ data }: CertificateTemplateProps) 
         <h1 style={{
           fontSize: '48px',
           fontWeight: 'bold',
-          color: '#333333',
+          color: awardConfig.textColor,
           margin: '0 0 10px 0',
           letterSpacing: '8px'
         }}>
@@ -101,7 +105,8 @@ export default function CertificateTemplate({ data }: CertificateTemplateProps) 
         {/* 副标题 */}
         <p style={{
           fontSize: '18px',
-          color: '#666666',
+          color: awardConfig.textColor,
+          opacity: 0.8,
           margin: '0 0 30px 0',
           letterSpacing: '2px'
         }}>
@@ -126,7 +131,7 @@ export default function CertificateTemplate({ data }: CertificateTemplateProps) 
         <div style={{
           fontSize: '32px',
           fontWeight: 'bold',
-          color: '#333333',
+          color: awardConfig.textColor,
           margin: '0 0 20px 0',
           letterSpacing: '2px'
         }}>
@@ -136,7 +141,7 @@ export default function CertificateTemplate({ data }: CertificateTemplateProps) 
         {/* 获奖描述 */}
         <p style={{
           fontSize: '20px',
-          color: '#333333',
+          color: awardConfig.textColor,
           margin: '0 0 30px 0',
           lineHeight: '1.6',
           letterSpacing: '1px'
@@ -147,7 +152,8 @@ export default function CertificateTemplate({ data }: CertificateTemplateProps) 
         {/* 详细信息 */}
         <div style={{
           fontSize: '16px',
-          color: '#666666',
+          color: awardConfig.textColor,
+          opacity: 0.9,
           lineHeight: '2',
           margin: '0 0 40px 0'
         }}>
@@ -170,7 +176,8 @@ export default function CertificateTemplate({ data }: CertificateTemplateProps) 
           {/* 颁发日期 */}
           <div style={{
             fontSize: '16px',
-            color: '#333333'
+            color: awardConfig.textColor,
+            opacity: 0.8
           }}>
             颁发日期：{data.issueDate}
           </div>
@@ -184,7 +191,7 @@ export default function CertificateTemplate({ data }: CertificateTemplateProps) 
             <div style={{
               fontSize: '20px',
               fontWeight: 'bold',
-              color: '#333333'
+              color: awardConfig.textColor
             }}>
               呈尚策划有限公司
             </div>

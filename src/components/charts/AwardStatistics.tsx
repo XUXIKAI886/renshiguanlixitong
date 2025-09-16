@@ -89,12 +89,12 @@ interface AwardStatisticsProps {
 // 奖项等级配置
 const AWARD_LEVEL_CONFIG = {
   special: { label: '特等奖', color: '#FFD700', icon: Trophy },
-  first: { label: '一等奖', color: '#FF8C00', icon: Medal },
-  second: { label: '二等奖', color: '#4169E1', icon: Award },
-  excellent: { label: '优秀员工', color: '#32CD32', icon: Star }
+  first: { label: '一等奖', color: '#E53E3E', icon: Medal },
+  second: { label: '二等奖', color: '#3182CE', icon: Award },
+  excellent: { label: '优秀员工', color: '#4CAF50', icon: Star }
 };
 
-const COLORS = ['#FFD700', '#FF8C00', '#4169E1', '#32CD32', '#8884D8'];
+const COLORS = ['#FFD700', '#E53E3E', '#3182CE', '#4CAF50', '#8884D8'];
 
 export default function AwardStatistics({ refreshTrigger }: AwardStatisticsProps) {
   const [data, setData] = useState<StatisticsData | null>(null);
