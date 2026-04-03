@@ -107,13 +107,47 @@ export default function EmployeeList({
     onSearch(searchKeyword);
   };
 
-  const handleFilter = () => {
+  const handleQuickFilterChange = (
+    nextFilters: Partial<{
+      city: string;
+      department: string;
+      position: string;
+      workStatus: string;
+    }>
+  ) => {
+    const mergedFilters = {
+      city: nextFilters.city ?? cityFilter,
+      department: nextFilters.department ?? departmentFilter,
+      position: nextFilters.position ?? positionFilter,
+      workStatus: nextFilters.workStatus ?? statusFilter,
+    };
+
     onFilter({
-      city: cityFilter !== 'all' ? cityFilter : '',
-      department: departmentFilter !== 'all' ? departmentFilter : '',
-      position: positionFilter !== 'all' ? positionFilter : '',
-      workStatus: statusFilter !== 'all' ? statusFilter : '',
+      city: mergedFilters.city !== 'all' ? mergedFilters.city : '',
+      department: mergedFilters.department !== 'all' ? mergedFilters.department : '',
+      position: mergedFilters.position !== 'all' ? mergedFilters.position : '',
+      workStatus: mergedFilters.workStatus !== 'all' ? mergedFilters.workStatus : '',
     });
+  };
+
+  const handleCityFilterChange = (value: string) => {
+    setCityFilter(value);
+    handleQuickFilterChange({ city: value });
+  };
+
+  const handleDepartmentFilterChange = (value: string) => {
+    setDepartmentFilter(value);
+    handleQuickFilterChange({ department: value });
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    handleQuickFilterChange({ workStatus: value });
+  };
+
+  const handlePositionFilterChange = (value: string) => {
+    setPositionFilter(value);
+    handleQuickFilterChange({ position: value });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -298,7 +332,7 @@ export default function EmployeeList({
 
             {/* 快速筛选器 */}
             <div className="flex gap-2">
-              <Select value={cityFilter} onValueChange={setCityFilter}>
+              <Select value={cityFilter} onValueChange={handleCityFilterChange}>
                 <SelectTrigger className="w-[120px]">
                   <SelectValue placeholder="城市" />
                 </SelectTrigger>
@@ -312,7 +346,7 @@ export default function EmployeeList({
                 </SelectContent>
               </Select>
 
-              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+              <Select value={departmentFilter} onValueChange={handleDepartmentFilterChange}>
                 <SelectTrigger className="w-[120px]">
                   <SelectValue placeholder="部门" />
                 </SelectTrigger>
@@ -326,7 +360,7 @@ export default function EmployeeList({
                 </SelectContent>
               </Select>
 
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
                 <SelectTrigger className="w-[120px]">
                   <SelectValue placeholder="状态" />
                 </SelectTrigger>
@@ -340,9 +374,9 @@ export default function EmployeeList({
                 </SelectContent>
               </Select>
 
-              <Button onClick={handleFilter} variant="outline">
+              <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
                 <Filter className="h-4 w-4 mr-2" />
-                筛选
+                更多筛选
               </Button>
 
               <Button variant="outline">
@@ -358,7 +392,7 @@ export default function EmployeeList({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="text-sm font-medium">岗位</label>
-                  <Select value={positionFilter} onValueChange={setPositionFilter}>
+                  <Select value={positionFilter} onValueChange={handlePositionFilterChange}>
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="选择岗位" />
                     </SelectTrigger>
@@ -383,9 +417,8 @@ export default function EmployeeList({
               </div>
               <div className="flex justify-end gap-2 mt-4">
                 <Button variant="outline" onClick={() => setShowFilters(false)}>
-                  取消
+                  收起
                 </Button>
-                <Button onClick={handleFilter}>应用筛选</Button>
               </div>
             </div>
           )}
