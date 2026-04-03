@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form/form';
 import { Employee } from '@/types';
-import { GENDER_LABELS, WORK_STATUS_LABELS, DEPARTMENTS, POSITIONS } from '@/constants';
+import { GENDER_LABELS, WORK_STATUS_LABELS, DEPARTMENTS, POSITIONS, CITIES } from '@/constants';
 
 // 表单验证模式
 const formSchema = z.object({
@@ -21,6 +21,7 @@ const formSchema = z.object({
     .min(2, '姓名至少2个字符')
     .max(20, '姓名最多20个字符')
     .regex(/^[\u4e00-\u9fa5]{2,20}$/, '请输入有效的中文姓名'),
+  city: z.enum(['宜昌', '武汉'], { message: '请选择城市' }),
   gender: z.enum(['male', 'female'], { message: '请选择性别' }),
   phone: z.string().regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
   idCard: z.string().regex(
@@ -57,6 +58,7 @@ export default function EmployeeForm({
         ? format(new Date(initialData.regularDate), 'yyyy-MM-dd')
         : '',
       name: initialData?.name || '',
+      city: initialData?.city || '宜昌',
       gender: initialData?.gender || 'male',
       phone: initialData?.phone || '',
       idCard: initialData?.idCard || '',
@@ -110,6 +112,31 @@ export default function EmployeeForm({
                     <FormControl>
                       <Input placeholder="请输入员工姓名" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>城市 *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="请选择城市" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {CITIES.map((city) => (
+                          <SelectItem key={city} value={city}>
+                            {city}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

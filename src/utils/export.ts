@@ -32,6 +32,7 @@ export function formatEmployeeDataForExport(employees: any[]) {
   return employees.map(employee => ({
     '员工ID': employee.employeeId,
     '姓名': employee.name,
+    '城市': employee.city || '宜昌',
     '性别': employee.gender === 'male' ? '男' : '女',
     '手机号': employee.phone,
     '身份证号': employee.idCard,

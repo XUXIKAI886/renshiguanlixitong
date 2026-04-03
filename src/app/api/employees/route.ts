@@ -10,6 +10,7 @@ const createEmployeeSchema = z.object({
     .min(2, '姓名至少2个字符')
     .max(20, '姓名最多20个字符')
     .regex(/^[\u4e00-\u9fa5]{2,20}$/, '请输入有效的中文姓名'),
+  city: z.enum(['宜昌', '武汉'], { message: '请选择城市' }).default('宜昌'),
   gender: z.enum(['male', 'female'], { message: '请选择性别' }),
   phone: z.string().regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
   idCard: z.string().regex(
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const keyword = searchParams.get('keyword') || '';
+    const city = searchParams.get('city') || '';
     const department = searchParams.get('department') || '';
     const position = searchParams.get('position') || '';
     const workStatus = searchParams.get('workStatus') || '';
@@ -50,6 +52,11 @@ export async function GET(request: NextRequest) {
         { employeeId: { $regex: keyword, $options: 'i' } },
         { phone: { $regex: keyword, $options: 'i' } }
       ];
+    }
+
+    // 城市筛选
+    if (city && city !== 'all') {
+      query.city = city;
     }
 
     // 部门筛选

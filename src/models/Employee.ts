@@ -41,6 +41,15 @@ const EmployeeSchema = new Schema<EmployeeDocument>(
         message: '请输入有效的中文姓名'
       }
     },
+    city: {
+      type: String,
+      trim: true,
+      enum: {
+        values: ['宜昌', '武汉'],
+        message: '请选择有效的城市'
+      },
+      default: '宜昌'
+    },
     gender: {
       type: String,
       required: [true, '性别不能为空'],
@@ -131,6 +140,7 @@ const EmployeeSchema = new Schema<EmployeeDocument>(
 
 // 创建索引（非unique索引，unique已在字段定义中设置）
 EmployeeSchema.index({ name: 1 });
+EmployeeSchema.index({ city: 1 });
 EmployeeSchema.index({ department: 1 });
 EmployeeSchema.index({ position: 1 });
 EmployeeSchema.index({ workStatus: 1 });

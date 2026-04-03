@@ -12,6 +12,7 @@ const updateEmployeeSchema = z.object({
     .max(20, '姓名最多20个字符')
     .regex(/^[\u4e00-\u9fa5]{2,20}$/, '请输入有效的中文姓名')
     .optional(),
+  city: z.enum(['宜昌', '武汉'], { message: '请选择城市' }).optional(),
   gender: z.enum(['male', 'female'], { message: '请选择性别' }).optional(),
   phone: z.string().regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码').optional(),
   idCard: z.string().regex(

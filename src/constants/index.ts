@@ -126,6 +126,12 @@ export const POSITIONS = [
   '美工',
 ];
 
+// 城市常量
+export const CITIES = [
+  '宜昌',
+  '武汉',
+] as const;
+
 // 数据库连接字符串（已移除硬编码，使用环境变量）
 // export const DATABASE_URL = 'mongodb://root:6wtbssl5@dbconn.sealosbja.site:35702/?directConnection=true';
 

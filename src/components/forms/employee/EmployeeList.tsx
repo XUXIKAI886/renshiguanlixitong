@@ -27,7 +27,7 @@ import {
   Trophy
 } from 'lucide-react';
 import { Employee } from '@/types';
-import { GENDER_LABELS, WORK_STATUS_LABELS, DEPARTMENTS, POSITIONS } from '@/constants';
+import { GENDER_LABELS, WORK_STATUS_LABELS, DEPARTMENTS, POSITIONS, CITIES } from '@/constants';
 import { formatDate, calculateWorkingDays } from '@/utils';
 import { exportToExcel, formatEmployeeDataForExport } from '@/utils/export';
 import { toast } from 'sonner';
@@ -67,6 +67,7 @@ export default function EmployeeList({
   isLoading = false
 }: EmployeeListProps) {
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [cityFilter, setCityFilter] = useState('all');
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [positionFilter, setPositionFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -108,6 +109,7 @@ export default function EmployeeList({
 
   const handleFilter = () => {
     onFilter({
+      city: cityFilter !== 'all' ? cityFilter : '',
       department: departmentFilter !== 'all' ? departmentFilter : '',
       position: positionFilter !== 'all' ? positionFilter : '',
       workStatus: statusFilter !== 'all' ? statusFilter : '',
@@ -296,6 +298,20 @@ export default function EmployeeList({
 
             {/* 快速筛选器 */}
             <div className="flex gap-2">
+              <Select value={cityFilter} onValueChange={setCityFilter}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="城市" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部城市</SelectItem>
+                  {CITIES.map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
                 <SelectTrigger className="w-[120px]">
                   <SelectValue placeholder="部门" />
@@ -385,6 +401,7 @@ export default function EmployeeList({
                 <TableRow>
                   <TableHead>员工ID</TableHead>
                   <TableHead>姓名</TableHead>
+                  <TableHead>城市</TableHead>
                   <TableHead>性别</TableHead>
                   <TableHead>手机号码</TableHead>
                   <TableHead>身份证号</TableHead>
@@ -401,13 +418,13 @@ export default function EmployeeList({
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={13} className="text-center py-8">
+                    <TableCell colSpan={14} className="text-center py-8">
                       加载中...
                     </TableCell>
                   </TableRow>
                 ) : employees.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={13} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={14} className="text-center py-8 text-muted-foreground">
                       暂无数据
                     </TableCell>
                   </TableRow>
@@ -419,6 +436,9 @@ export default function EmployeeList({
                       </TableCell>
                       <TableCell className="font-medium">
                         {employee.name}
+                      </TableCell>
+                      <TableCell>
+                        {employee.city || '宜昌'}
                       </TableCell>
                       <TableCell>
                         {GENDER_LABELS[employee.gender]}

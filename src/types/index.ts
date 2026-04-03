@@ -25,6 +25,7 @@ export interface Employee {
   employeeId: string;
   regularDate: Date;
   name: string;
+  city?: '宜昌' | '武汉';
   gender: 'male' | 'female';
   phone: string;
   idCard: string;

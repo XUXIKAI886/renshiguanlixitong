@@ -40,6 +40,7 @@ export default function EmployeesPage() {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
         ...(searchKeyword && { keyword: searchKeyword }),
+        ...(filters.city && { city: filters.city }),
         ...(filters.department && { department: filters.department }),
         ...(filters.position && { position: filters.position }),
         ...(filters.workStatus && { workStatus: filters.workStatus }),
