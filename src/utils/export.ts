@@ -58,6 +58,7 @@ export function formatRecruitmentDataForExport(records: any[]) {
     '身份证号': record.idCard,
     '电话': record.phone,
     '应聘岗位': record.appliedPosition || '未分配',
+    '所属部门': record.department || '未分配',
     '面试日期': new Date(record.interviewDate).toLocaleDateString('zh-CN'),
     '到岗日期': record.arrivalDate ? new Date(record.arrivalDate).toLocaleDateString('zh-CN') : '-',
     '试岗天数': record.trialDays || '-',

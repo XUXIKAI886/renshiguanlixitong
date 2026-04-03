@@ -10,6 +10,7 @@ export interface RecruitmentRecord {
   idCard?: string;
   phone: string;
   appliedPosition?: string; // 新增：应聘岗位
+  department?: string;
   arrivalDate?: Date;
   regularizedDate?: Date;
   trialDate?: Date; // 兼容旧数据

@@ -27,6 +27,7 @@ export const syncEmployeeFromRecruitment = async (record: {
   idCard?: string | null;
   arrivalDate?: Date | string | null;
   appliedPosition?: string;
+  department?: string;
 }) => {
   if (!record.arrivalDate) {
     throw new Error('招聘状态改为已转正前，必须先填写到岗日期');
@@ -58,7 +59,7 @@ export const syncEmployeeFromRecruitment = async (record: {
     phone: record.phone,
     idCard: record.idCard,
     workStatus: 'active',
-    department: getDepartmentByPosition(record.appliedPosition),
+    department: record.department || getDepartmentByPosition(record.appliedPosition),
     position: record.appliedPosition || '未分配',
     totalScore: 0
   });

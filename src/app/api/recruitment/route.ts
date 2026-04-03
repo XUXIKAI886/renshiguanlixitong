@@ -26,6 +26,9 @@ const recruitmentRecordSchema = z.object({
     '销售主管', '人事主管', '运营主管',
     '销售', '运营', '助理', '客服', '美工', '未分配'
   ]).default('未分配'),
+  department: z.enum([
+    '销售部', '运营部', '人事部', '未分配'
+  ]).default('未分配'),
   arrivalDate: z.string().transform((str) => str ? new Date(str) : undefined).optional(),
   resignationReason: z.string().max(500, '备注内容最多500字').optional(),
   recruitmentStatus: z.enum([
@@ -165,7 +168,8 @@ export async function POST(request: NextRequest) {
         phone: validatedData.phone,
         idCard: validatedData.idCard,
         arrivalDate: validatedData.arrivalDate,
-        appliedPosition: validatedData.appliedPosition
+        appliedPosition: validatedData.appliedPosition,
+        department: validatedData.department
       });
     }
 

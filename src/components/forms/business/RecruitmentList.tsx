@@ -505,6 +505,10 @@ export default function RecruitmentList({
                   <p className="font-medium">{detailRecord.appliedPosition || '未分配'}</p>
                 </div>
                 <div>
+                  <p className="text-muted-foreground">所属部门</p>
+                  <p className="font-medium">{detailRecord.department || '未分配'}</p>
+                </div>
+                <div>
                   <p className="text-muted-foreground">面试日期</p>
                   <p className="font-medium">{formatDate(detailRecord.interviewDate)}</p>
                 </div>

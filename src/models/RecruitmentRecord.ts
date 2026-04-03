@@ -103,6 +103,15 @@ const RecruitmentRecordSchema = new Schema<RecruitmentRecordDocument>(
       },
       default: '未分配'
     },
+    department: {
+      type: String,
+      trim: true,
+      enum: {
+        values: ['销售部', '运营部', '人事部', '未分配'],
+        message: '请选择有效的部门'
+      },
+      default: '未分配'
+    },
     arrivalDate: {
       type: Date,
       validate: {
@@ -167,6 +176,7 @@ RecruitmentRecordSchema.index({ interviewDate: -1 });
 RecruitmentRecordSchema.index({ recruitmentStatus: 1 });
 RecruitmentRecordSchema.index({ age: 1 });
 RecruitmentRecordSchema.index({ appliedPosition: 1 }); // 新增应聘岗位索引
+RecruitmentRecordSchema.index({ department: 1 });
 RecruitmentRecordSchema.index({ idCard: 1 }); // 普通索引，提升查询性能，不强制唯一性
 
 // 中间件：自动维护试岗流程字段

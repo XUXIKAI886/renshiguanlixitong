@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/form/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form/form';
 import { RecruitmentRecord } from '@/types';
-import { CITIES, GENDER_LABELS, RECRUITMENT_STATUS_LABELS, POSITIONS } from '@/constants';
+import { CITIES, DEPARTMENTS, GENDER_LABELS, RECRUITMENT_STATUS_LABELS, POSITIONS } from '@/constants';
 import {
   calculateTrialDays,
   getArrivalDate,
@@ -36,6 +36,7 @@ const formSchema = z.object({
   }, '请输入有效的身份证号'),
   phone: z.string().regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
   appliedPosition: z.string().default('未分配'),
+  department: z.enum(['销售部', '运营部', '人事部', '未分配'], { message: '请选择部门' }),
   arrivalDate: z.string().optional(),
   resignationReason: z.string().max(500, '备注内容最多500字').optional(),
   recruitmentStatus: z.enum(['pending_arrival', 'no_show', 'trialing', 'regularized', 'rejected']),
@@ -79,6 +80,7 @@ export default function RecruitmentForm({
       idCard: initialData?.idCard || '',
       phone: initialData?.phone || '',
       appliedPosition: initialData?.appliedPosition || '未分配',
+      department: initialData?.department || '未分配',
       arrivalDate: getArrivalDate(initialData || {})
         ? format(new Date(getArrivalDate(initialData || {})!), 'yyyy-MM-dd')
         : '',
@@ -264,6 +266,32 @@ export default function RecruitmentForm({
                         {POSITIONS.map((position) => (
                           <SelectItem key={position} value={position}>
                             {position}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="department"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>所属部门 *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="请选择所属部门" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="未分配">未分配</SelectItem>
+                        {DEPARTMENTS.map((department) => (
+                          <SelectItem key={department} value={department}>
+                            {department}
                           </SelectItem>
                         ))}
                       </SelectContent>
