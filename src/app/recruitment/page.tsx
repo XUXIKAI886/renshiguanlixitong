@@ -126,6 +126,37 @@ export default function RecruitmentPage() {
     }
   };
 
+  // 快速更新招聘状态
+  const handleStatusUpdate = async (
+    id: string,
+    data: { recruitmentStatus: RecruitmentRecord['recruitmentStatus']; arrivalDate?: string }
+  ) => {
+    try {
+      const response = await fetch(`/api/recruitment/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('招聘状态更新成功');
+        await fetchRecords();
+        return true;
+      }
+
+      toast.error(result.error || '状态更新失败');
+      return false;
+    } catch (error) {
+      console.error('更新招聘状态失败:', error);
+      toast.error('更新招聘状态失败');
+      return false;
+    }
+  };
+
   // 删除招聘记录
   const handleDelete = async (id: string) => {
     try {
@@ -200,6 +231,7 @@ export default function RecruitmentPage() {
         onPageChange={handlePageChange}
         onSearch={handleSearch}
         onFilter={handleFilter}
+        onStatusUpdate={handleStatusUpdate}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onAdd={handleAdd}

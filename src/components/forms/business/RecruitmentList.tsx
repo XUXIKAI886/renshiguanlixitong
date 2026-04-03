@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/basic/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/layout/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/interaction/dialog';
 import { IdCardDisplay } from '@/components/ui/form/id-card-display';
 import { PasswordVerification } from '@/components/ui/form/password-verification';
 import {
@@ -26,6 +27,7 @@ import { RecruitmentRecord } from '@/types';
 import { GENDER_LABELS, RECRUITMENT_STATUS_LABELS } from '@/constants';
 import { formatDate } from '@/utils';
 import { exportToExcel, formatRecruitmentDataForExport } from '@/utils/export';
+import { calculateTrialDays, requiresArrivalDate } from '@/utils/recruitment';
 import { toast } from 'sonner';
 
 interface RecruitmentListProps {
@@ -36,6 +38,10 @@ interface RecruitmentListProps {
   onPageChange: (page: number) => void;
   onSearch: (keyword: string) => void;
   onFilter: (filters: { status?: string }) => void;
+  onStatusUpdate: (
+    id: string,
+    data: { recruitmentStatus: RecruitmentRecord['recruitmentStatus']; arrivalDate?: string }
+  ) => Promise<boolean>;
   onEdit: (record: RecruitmentRecord) => void;
   onDelete: (id: string) => void;
   onAdd: () => void;
@@ -59,6 +65,7 @@ export default function RecruitmentList({
   onPageChange,
   onSearch,
   onFilter,
+  onStatusUpdate,
   onEdit,
   onDelete,
   onAdd,
@@ -68,6 +75,10 @@ export default function RecruitmentList({
   const [statusFilter, setStatusFilter] = useState('all');
   const [overviewStats, setOverviewStats] = useState<any>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [detailRecord, setDetailRecord] = useState<RecruitmentRecord | null>(null);
+  const [detailStatus, setDetailStatus] = useState<RecruitmentRecord['recruitmentStatus']>('pending_arrival');
+  const [detailArrivalDate, setDetailArrivalDate] = useState('');
+  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState<{
     type: 'edit' | 'delete';
@@ -93,6 +104,18 @@ export default function RecruitmentList({
   useEffect(() => {
     fetchOverviewStats();
   }, []);
+
+  useEffect(() => {
+    if (!detailRecord) {
+      return;
+    }
+    setDetailStatus(detailRecord.recruitmentStatus);
+    setDetailArrivalDate(
+      detailRecord.arrivalDate
+        ? new Date(detailRecord.arrivalDate).toISOString().slice(0, 10)
+        : ''
+    );
+  }, [detailRecord]);
 
   const handleSearch = () => {
     onSearch(searchKeyword);
@@ -132,6 +155,37 @@ export default function RecruitmentList({
   const handlePasswordClose = () => {
     setShowPasswordDialog(false);
     setPendingAction(null);
+  };
+
+  const handleRowClick = (record: RecruitmentRecord) => {
+    setDetailRecord(record);
+  };
+
+  const handleDetailClose = () => {
+    setDetailRecord(null);
+    setIsStatusUpdating(false);
+  };
+
+  const handleStatusSubmit = async () => {
+    if (!detailRecord?._id) {
+      return;
+    }
+
+    if (requiresArrivalDate(detailStatus) && !detailArrivalDate) {
+      toast.error('当前招聘状态必须填写到岗日期');
+      return;
+    }
+
+    setIsStatusUpdating(true);
+    const success = await onStatusUpdate(detailRecord._id, {
+      recruitmentStatus: detailStatus,
+      arrivalDate: detailArrivalDate || undefined,
+    });
+    setIsStatusUpdating(false);
+
+    if (success) {
+      handleDetailClose();
+    }
   };
 
   const handleExport = () => {
@@ -184,6 +238,14 @@ export default function RecruitmentList({
       bgColor: 'bg-purple-100'
     }
   ];
+
+  const detailTrialDays = detailArrivalDate
+    ? calculateTrialDays(
+        detailArrivalDate,
+        detailStatus,
+        detailStatus === 'regularized' ? new Date() : undefined
+      )
+    : undefined;
 
   return (
     <div className="space-y-6">
@@ -305,13 +367,17 @@ export default function RecruitmentList({
                   </TableRow>
                 ) : (
                   records.map((record) => (
-                    <TableRow key={record._id}>
+                    <TableRow
+                      key={record._id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleRowClick(record)}
+                    >
                       <TableCell className="font-medium">{record.candidateName}</TableCell>
                       <TableCell>{GENDER_LABELS[record.gender]}</TableCell>
                       <TableCell className="text-center">
                         {record.age ? <span className="font-medium text-blue-600">{record.age}岁</span> : '-'}
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         {record.idCard ? <IdCardDisplay idCard={record.idCard} /> : <span className="text-gray-400 text-sm">未填写</span>}
                       </TableCell>
                       <TableCell className="font-mono text-sm">{record.phone}</TableCell>
@@ -336,7 +402,7 @@ export default function RecruitmentList({
                       <TableCell className="text-sm text-muted-foreground">
                         {record.createdAt ? formatDate(record.createdAt) : '-'}
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
@@ -396,9 +462,82 @@ export default function RecruitmentList({
         description={
           pendingAction?.type === 'edit'
             ? '为保护数据安全，请输入编辑密码'
-            : '为保护数据安全，请输入删除密码'
+          : '为保护数据安全，请输入删除密码'
         }
       />
+
+      <Dialog open={!!detailRecord} onOpenChange={(open) => !open && handleDetailClose()}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>招聘记录详情与状态更新</DialogTitle>
+          </DialogHeader>
+          {detailRecord && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">姓名</p>
+                  <p className="font-medium">{detailRecord.candidateName}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">电话</p>
+                  <p className="font-medium">{detailRecord.phone}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">应聘岗位</p>
+                  <p className="font-medium">{detailRecord.appliedPosition || '未分配'}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">面试日期</p>
+                  <p className="font-medium">{formatDate(detailRecord.interviewDate)}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">招聘状态</p>
+                  <Select value={detailStatus} onValueChange={(value) => setDetailStatus(value as RecruitmentRecord['recruitmentStatus'])}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="请选择招聘状态" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(RECRUITMENT_STATUS_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {requiresArrivalDate(detailStatus) && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">到岗日期</p>
+                    <Input
+                      type="date"
+                      value={detailArrivalDate}
+                      onChange={(e) => setDetailArrivalDate(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-lg border bg-muted/30 p-4 text-sm">
+                <p className="font-medium mb-2">自动统计</p>
+                <p>试岗天数：{detailTrialDays ? `${detailTrialDays} 天` : '暂无'}</p>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={handleDetailClose}>
+                  关闭
+                </Button>
+                <Button onClick={handleStatusSubmit} disabled={isStatusUpdating}>
+                  {isStatusUpdating ? '保存中...' : '保存状态'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
