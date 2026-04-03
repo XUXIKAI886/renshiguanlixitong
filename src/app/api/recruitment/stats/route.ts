@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { RecruitmentRecord } from '@/models';
+import { normalizeRecruitmentRecord } from '@/utils/recruitment';
 
 // GET - 获取招聘统计数据
 export async function GET(request: NextRequest) {
@@ -9,21 +10,110 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const year = parseInt(searchParams.get('year') || new Date().getFullYear().toString());
+    const yearStart = new Date(year, 0, 1);
+    const yearEnd = new Date(year + 1, 0, 1);
 
-    // 获取基础统计数据
-    const basicStats = await RecruitmentRecord.getStatistics();
+    const rawRecords = await RecruitmentRecord.find({})
+      .sort({ interviewDate: -1 })
+      .lean();
+    const records = rawRecords.map((record) => normalizeRecruitmentRecord(record));
 
-    // 获取月度趋势数据
-    const monthlyTrend = await getMonthlyTrend(year);
+    const yearlyInterviewRecords = records.filter(record => {
+      const interviewDate = new Date(record.interviewDate);
+      return interviewDate >= yearStart && interviewDate < yearEnd;
+    });
 
-    // 获取状态分布
-    const statusDistribution = await getStatusDistribution();
+    const trialDayRecords = yearlyInterviewRecords.filter(record => typeof record.trialDays === 'number' && record.trialDays > 0);
+    const avgTrialDays = trialDayRecords.length > 0
+      ? trialDayRecords.reduce((sum, record) => sum + (record.trialDays || 0), 0) / trialDayRecords.length
+      : 0;
 
-    // 获取试岗通过率趋势
-    const trialPassRateTrend = await getTrialPassRateTrend(year);
+    const trialRelevantRecords = yearlyInterviewRecords.filter(record =>
+      ['trialing', 'regularized'].includes(record.recruitmentStatus)
+    );
+    const regularizedCount = yearlyInterviewRecords.filter(record => record.recruitmentStatus === 'regularized').length;
+    const regularizationRate = trialRelevantRecords.length > 0
+      ? (regularizedCount / trialRelevantRecords.length) * 100
+      : 0;
 
-    // 获取招聘渠道分析
-    const channelAnalysis = await getChannelAnalysis();
+    const basicStats = {
+      totalCandidates: yearlyInterviewRecords.length,
+      pendingArrivalCount: yearlyInterviewRecords.filter(record => record.recruitmentStatus === 'pending_arrival').length,
+      noShowCount: yearlyInterviewRecords.filter(record => record.recruitmentStatus === 'no_show').length,
+      trialingCount: yearlyInterviewRecords.filter(record => record.recruitmentStatus === 'trialing').length,
+      regularizedCount,
+      rejectedCount: yearlyInterviewRecords.filter(record => record.recruitmentStatus === 'rejected').length,
+      regularizationRate,
+      avgTrialDays
+    };
+
+    const monthlyTrend = Array.from({ length: 12 }, (_, index) => {
+      const month = index + 1;
+      const monthRecords = yearlyInterviewRecords.filter(record =>
+        new Date(record.interviewDate).getMonth() + 1 === month
+      );
+
+      return {
+        month: `${month}月`,
+        total: monthRecords.length,
+        pendingArrival: monthRecords.filter(record => record.recruitmentStatus === 'pending_arrival').length,
+        noShow: monthRecords.filter(record => record.recruitmentStatus === 'no_show').length,
+        trialing: monthRecords.filter(record => record.recruitmentStatus === 'trialing').length,
+        regularized: monthRecords.filter(record => record.recruitmentStatus === 'regularized').length,
+        rejected: monthRecords.filter(record => record.recruitmentStatus === 'rejected').length,
+      };
+    });
+
+    const statusDistribution = [
+      { value: 'pending_arrival', status: '可试岗待到岗', count: basicStats.pendingArrivalCount },
+      { value: 'no_show', status: '未到岗', count: basicStats.noShowCount },
+      { value: 'trialing', status: '试岗中', count: basicStats.trialingCount },
+      { value: 'regularized', status: '已转正', count: basicStats.regularizedCount },
+      { value: 'rejected', status: '已拒绝', count: basicStats.rejectedCount },
+    ].filter(item => item.count > 0);
+
+    const regularizationTrend = Array.from({ length: 12 }, (_, index) => {
+      const month = index + 1;
+      const arrived = yearlyInterviewRecords.filter(record =>
+        record.arrivalDate &&
+        new Date(record.arrivalDate).getFullYear() === year &&
+        new Date(record.arrivalDate).getMonth() + 1 === month
+      ).length;
+      const regularized = yearlyInterviewRecords.filter(record =>
+        record.regularizedDate &&
+        new Date(record.regularizedDate).getFullYear() === year &&
+        new Date(record.regularizedDate).getMonth() + 1 === month
+      ).length;
+
+      return {
+        month: `${month}月`,
+        arrived,
+        regularized,
+        regularizationRate: arrived > 0 ? Math.round((regularized / arrived) * 100) : 0,
+      };
+    });
+
+    const channelMap = new Map<string, { total: number; regularized: number }>();
+    yearlyInterviewRecords.forEach(record => {
+      const channel = record.recruitmentChannel || '未填写';
+      const current = channelMap.get(channel) || { total: 0, regularized: 0 };
+      current.total += 1;
+      if (record.recruitmentStatus === 'regularized') {
+        current.regularized += 1;
+      }
+      channelMap.set(channel, current);
+    });
+
+    const channelAnalysis = Array.from(channelMap.entries())
+      .map(([channel, value]) => ({
+        channel,
+        total: value.total,
+        regularized: value.regularized,
+        regularizationRate: value.total > 0
+          ? Math.round((value.regularized / value.total) * 10000) / 100
+          : 0,
+      }))
+      .sort((a, b) => b.total - a.total);
 
     return NextResponse.json({
       success: true,
@@ -31,11 +121,10 @@ export async function GET(request: NextRequest) {
         basicStats,
         monthlyTrend,
         statusDistribution,
-        trialPassRateTrend,
+        regularizationTrend,
         channelAnalysis,
       }
     });
-
   } catch (error) {
     console.error('获取招聘统计数据失败:', error);
     return NextResponse.json(
@@ -43,194 +132,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// 获取月度招聘趋势
-async function getMonthlyTrend(year: number) {
-  const startDate = new Date(year, 0, 1);
-  const endDate = new Date(year + 1, 0, 1);
-
-  const monthlyData = await RecruitmentRecord.aggregate([
-    {
-      $match: {
-        interviewDate: {
-          $gte: startDate,
-          $lt: endDate
-        }
-      }
-    },
-    {
-      $group: {
-        _id: {
-          month: { $month: '$interviewDate' },
-          status: '$recruitmentStatus'
-        },
-        count: { $sum: 1 }
-      }
-    },
-    {
-      $group: {
-        _id: '$_id.month',
-        total: { $sum: '$count' },
-        hired: {
-          $sum: {
-            $cond: [{ $eq: ['$_id.status', 'hired'] }, '$count', 0]
-          }
-        },
-        rejected: {
-          $sum: {
-            $cond: [{ $eq: ['$_id.status', 'rejected'] }, '$count', 0]
-          }
-        },
-        interviewing: {
-          $sum: {
-            $cond: [{ $eq: ['$_id.status', 'interviewing'] }, '$count', 0]
-          }
-        },
-        trial: {
-          $sum: {
-            $cond: [{ $eq: ['$_id.status', 'trial'] }, '$count', 0]
-          }
-        }
-      }
-    },
-    { $sort: { _id: 1 } }
-  ]);
-
-  // 填充缺失的月份数据
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const result = months.map(month => {
-    const data = monthlyData.find(item => item._id === month);
-    return {
-      month: `${month}月`,
-      total: data?.total || 0,
-      hired: data?.hired || 0,
-      rejected: data?.rejected || 0,
-      interviewing: data?.interviewing || 0,
-      trial: data?.trial || 0,
-    };
-  });
-
-  return result;
-}
-
-// 获取状态分布
-async function getStatusDistribution() {
-  const distribution = await RecruitmentRecord.aggregate([
-    {
-      $group: {
-        _id: '$recruitmentStatus',
-        count: { $sum: 1 }
-      }
-    }
-  ]);
-
-  const statusLabels = {
-    interviewing: '面试中',
-    trial: '试岗中',
-    hired: '已录用',
-    rejected: '已拒绝'
-  };
-
-  return distribution.map(item => ({
-    status: statusLabels[item._id as keyof typeof statusLabels] || item._id,
-    count: item.count,
-    value: item._id
-  }));
-}
-
-// 获取试岗通过率趋势
-async function getTrialPassRateTrend(year: number) {
-  const startDate = new Date(year, 0, 1);
-  const endDate = new Date(year + 1, 0, 1);
-
-  const trialData = await RecruitmentRecord.aggregate([
-    {
-      $match: {
-        hasTrial: true,
-        trialDate: {
-          $gte: startDate,
-          $lt: endDate
-        }
-      }
-    },
-    {
-      $group: {
-        _id: { $month: '$trialDate' },
-        total: { $sum: 1 },
-        passed: {
-          $sum: {
-            $cond: [
-              { $in: ['$trialStatus', ['excellent', 'good']] },
-              1,
-              0
-            ]
-          }
-        }
-      }
-    },
-    { $sort: { _id: 1 } }
-  ]);
-
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const result = months.map(month => {
-    const data = trialData.find(item => item._id === month);
-    const total = data?.total || 0;
-    const passed = data?.passed || 0;
-    const passRate = total > 0 ? Math.round((passed / total) * 100) : 0;
-
-    return {
-      month: `${month}月`,
-      total,
-      passed,
-      passRate,
-    };
-  });
-
-  return result;
-}
-
-// 获取招聘渠道分析
-async function getChannelAnalysis() {
-  const channelData = await RecruitmentRecord.aggregate([
-    {
-      $group: {
-        _id: {
-          $cond: [
-            { $eq: ['$recruitmentChannel', ''] },
-            '未填写',
-            '$recruitmentChannel'
-          ]
-        },
-        total: { $sum: 1 },
-        hired: {
-          $sum: {
-            $cond: [{ $eq: ['$recruitmentStatus', 'hired'] }, 1, 0]
-          }
-        }
-      }
-    },
-    {
-      $project: {
-        channel: '$_id',
-        total: 1,
-        hired: 1,
-        hireRate: {
-          $cond: [
-            { $eq: ['$total', 0] },
-            0,
-            { $multiply: [{ $divide: ['$hired', '$total'] }, 100] }
-          ]
-        }
-      }
-    },
-    { $sort: { total: -1 } }
-  ]);
-
-  return channelData.map(item => ({
-    channel: item.channel || '未填写',
-    total: item.total,
-    hired: item.hired,
-    hireRate: Math.round(item.hireRate * 100) / 100,
-  }));
 }

@@ -52,20 +52,20 @@ export function formatEmployeeDataForExport(employees: any[]) {
 // 格式化招聘数据用于导出
 export function formatRecruitmentDataForExport(records: any[]) {
   return records.map(record => ({
-    '姓名': record.name,
+    '姓名': record.candidateName,
     '性别': record.gender === 'male' ? '男' : '女',
     '身份证号': record.idCard,
     '电话': record.phone,
+    '应聘岗位': record.appliedPosition || '未分配',
     '面试日期': new Date(record.interviewDate).toLocaleDateString('zh-CN'),
-    '是否试岗': record.isProbation ? '是' : '否',
-    '试岗日期': record.probationStartDate ? new Date(record.probationStartDate).toLocaleDateString('zh-CN') : '-',
-    '试岗天数': record.probationDays || '-',
-    '试岗状态': record.probationStatus || '-',
+    '到岗日期': record.arrivalDate ? new Date(record.arrivalDate).toLocaleDateString('zh-CN') : '-',
+    '试岗天数': record.trialDays || '-',
     '备注内容': record.resignationReason || '-',
-    '招聘状态': record.status === 'pending' ? '待处理' :
-                record.status === 'interviewing' ? '面试中' :
-                record.status === 'hired' ? '已录用' :
-                record.status === 'rejected' ? '已拒绝' : '已离职',
+    '招聘状态': record.recruitmentStatus === 'pending_arrival' ? '可试岗待到岗' :
+                record.recruitmentStatus === 'no_show' ? '未到岗' :
+                record.recruitmentStatus === 'trialing' ? '试岗中' :
+                record.recruitmentStatus === 'regularized' ? '已转正' :
+                record.recruitmentStatus === 'rejected' ? '已拒绝' : record.recruitmentStatus,
     '创建时间': new Date(record.createdAt).toLocaleDateString('zh-CN')
   }));
 }

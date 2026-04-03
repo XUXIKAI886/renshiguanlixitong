@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { RecruitmentRecord as IRecruitmentRecord } from '@/types';
+import { calculateTrialDays, normalizeRecruitmentStatus } from '@/utils/recruitment';
 
 // 扩展Document接口
 export interface RecruitmentRecordDocument extends IRecruitmentRecord, Document {
@@ -93,7 +94,7 @@ const RecruitmentRecordSchema = new Schema<RecruitmentRecordDocument>(
       },
       default: '未分配'
     },
-    trialDate: {
+    arrivalDate: {
       type: Date,
       validate: {
         validator: function(this: RecruitmentRecordDocument, value: Date) {
@@ -102,43 +103,25 @@ const RecruitmentRecordSchema = new Schema<RecruitmentRecordDocument>(
           }
           return true;
         },
-        message: '试岗日期不能早于面试日期'
+        message: '到岗日期不能早于面试日期'
       }
     },
-    hasTrial: {
-      type: Boolean,
-      required: [true, '是否试岗不能为空'],
-      default: false
+    regularizedDate: {
+      type: Date,
+      validate: {
+        validator: function(this: RecruitmentRecordDocument, value: Date) {
+          if (value && this.arrivalDate) {
+            return value >= this.arrivalDate;
+          }
+          return true;
+        },
+        message: '转正日期不能早于到岗日期'
+      }
     },
     trialDays: {
       type: Number,
       min: [1, '试岗天数至少1天'],
-      max: [90, '试岗天数最多90天'],
-      validate: {
-        validator: function(this: RecruitmentRecordDocument, value: number) {
-          if (this.hasTrial && !value) {
-            return false;
-          }
-          return true;
-        },
-        message: '试岗时必须填写试岗天数'
-      }
-    },
-    trialStatus: {
-      type: String,
-      enum: {
-        values: ['excellent', 'good', 'average', 'poor'],
-        message: '试岗状况只能是优秀、良好、一般或差'
-      },
-      validate: {
-        validator: function(this: RecruitmentRecordDocument, value: string) {
-          if (this.hasTrial && !value) {
-            return false;
-          }
-          return true;
-        },
-        message: '试岗时必须填写试岗状况'
-      }
+      max: [90, '试岗天数最多90天']
     },
     resignationReason: {
       type: String,
@@ -149,10 +132,10 @@ const RecruitmentRecordSchema = new Schema<RecruitmentRecordDocument>(
       type: String,
       required: [true, '招聘状态不能为空'],
       enum: {
-        values: ['interviewing', 'trial', 'hired', 'rejected'],
-        message: '招聘状态只能是面试中、试岗中、已录用或已拒绝'
+        values: ['pending_arrival', 'no_show', 'trialing', 'regularized', 'rejected'],
+        message: '招聘状态只能是可试岗待到岗、未到岗、试岗中、已转正或已拒绝'
       },
-      default: 'interviewing'
+      default: 'pending_arrival'
     }
   },
   {
@@ -176,10 +159,27 @@ RecruitmentRecordSchema.index({ age: 1 });
 RecruitmentRecordSchema.index({ appliedPosition: 1 }); // 新增应聘岗位索引
 RecruitmentRecordSchema.index({ idCard: 1 }); // 普通索引，提升查询性能，不强制唯一性
 
-// 中间件：自动更新招聘状态
+// 中间件：自动维护试岗流程字段
 RecruitmentRecordSchema.pre('save', function(next) {
-  if (this.hasTrial && this.trialDate) {
-    this.recruitmentStatus = 'trial';
+  const normalizedStatus = normalizeRecruitmentStatus(this.recruitmentStatus);
+  this.recruitmentStatus = normalizedStatus;
+
+  if (normalizedStatus === 'regularized' && !this.regularizedDate) {
+    this.regularizedDate = new Date();
+  }
+
+  if (normalizedStatus !== 'regularized') {
+    this.regularizedDate = undefined;
+  }
+
+  const calculatedDays = calculateTrialDays(
+    this.arrivalDate,
+    normalizedStatus,
+    this.regularizedDate,
+    this.updatedAt
+  );
+  if (calculatedDays) {
+    this.trialDays = calculatedDays;
   }
   next();
 });
@@ -195,40 +195,20 @@ RecruitmentRecordSchema.statics.getStatistics = async function() {
     createdAt: { $gte: currentMonth }
   });
   
-  const trialPassRate = await this.aggregate([
-    { $match: { hasTrial: true } },
-    {
-      $group: {
-        _id: null,
-        total: { $sum: 1 },
-        passed: {
-          $sum: {
-            $cond: [
-              { $in: ['$trialStatus', ['excellent', 'good']] },
-              1,
-              0
-            ]
-          }
-        }
-      }
-    },
-    {
-      $project: {
-        passRate: {
-          $cond: [
-            { $eq: ['$total', 0] },
-            0,
-            { $divide: ['$passed', '$total'] }
-          ]
-        }
-      }
-    }
-  ]);
+  const pendingArrivalCount = await this.countDocuments({ recruitmentStatus: 'pending_arrival' });
+  const noShowCount = await this.countDocuments({ recruitmentStatus: 'no_show' });
+  const trialingCount = await this.countDocuments({ recruitmentStatus: 'trialing' });
+  const regularizedCount = await this.countDocuments({ recruitmentStatus: 'regularized' });
+  const rejectedCount = await this.countDocuments({ recruitmentStatus: 'rejected' });
   
   return {
     totalCount,
     monthlyCount,
-    trialPassRate: trialPassRate[0]?.passRate || 0
+    pendingArrivalCount,
+    noShowCount,
+    trialingCount,
+    regularizedCount,
+    rejectedCount
   };
 };
 

@@ -7,7 +7,7 @@ import {
   MetricCard,
   MonthlyTrendChart,
   StatusDistributionChart,
-  TrialPassRateChart,
+  RegularizationTrendChart,
   ChannelAnalysisChart
 } from '@/components/charts/RecruitmentCharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/form/select';
@@ -17,37 +17,39 @@ import { RefreshCw, Users, UserCheck, UserX, Clock } from 'lucide-react';
 interface DashboardData {
   basicStats: {
     totalCandidates: number;
-    hiredCount: number;
+    pendingArrivalCount: number;
+    noShowCount: number;
+    trialingCount: number;
+    regularizedCount: number;
     rejectedCount: number;
-    interviewingCount: number;
-    trialCount: number;
-    hireRate: number;
+    regularizationRate: number;
     avgTrialDays: number;
   };
   monthlyTrend: Array<{
     month: string;
     total: number;
-    hired: number;
+    pendingArrival: number;
+    noShow: number;
+    trialing: number;
+    regularized: number;
     rejected: number;
-    interviewing: number;
-    trial: number;
   }>;
   statusDistribution: Array<{
     status: string;
     count: number;
     value: string;
   }>;
-  trialPassRateTrend: Array<{
+  regularizationTrend: Array<{
     month: string;
-    total: number;
-    passed: number;
-    passRate: number;
+    arrived: number;
+    regularized: number;
+    regularizationRate: number;
   }>;
   channelAnalysis: Array<{
     channel: string;
     total: number;
-    hired: number;
-    hireRate: number;
+    regularized: number;
+    regularizationRate: number;
   }>;
 }
 
@@ -155,15 +157,15 @@ export default function RecruitmentDashboard() {
                 suffix="人"
               />
               <MetricCard
-                title="录用人数"
-                value={data.basicStats.hiredCount}
+                title="已转正人数"
+                value={data.basicStats.regularizedCount}
                 icon={<UserCheck />}
                 suffix="人"
                 changeType="increase"
               />
               <MetricCard
-                title="录用率"
-                value={data.basicStats.hireRate.toFixed(1)}
+                title="转正率"
+                value={data.basicStats.regularizationRate.toFixed(1)}
                 icon={<UserCheck />}
                 suffix="%"
                 changeType="increase"
@@ -187,8 +189,8 @@ export default function RecruitmentDashboard() {
               {/* 状态分布图 */}
               <StatusDistributionChart data={data.statusDistribution} />
 
-              {/* 试岗通过率趋势 */}
-              <TrialPassRateChart data={data.trialPassRateTrend} />
+              {/* 转正率趋势 */}
+              <RegularizationTrendChart data={data.regularizationTrend} />
 
               {/* 招聘渠道分析 */}
               <div className="lg:col-span-2">
@@ -202,26 +204,30 @@ export default function RecruitmentDashboard() {
                 <h3 className="font-semibold text-blue-900 mb-2">面试状态</h3>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span>面试中:</span>
-                    <span className="font-medium">{data.basicStats.interviewingCount}人</span>
+                    <span>待到岗:</span>
+                    <span className="font-medium">{data.basicStats.pendingArrivalCount}人</span>
                   </div>
                   <div className="flex justify-between">
                     <span>试岗中:</span>
-                    <span className="font-medium">{data.basicStats.trialCount}人</span>
+                    <span className="font-medium">{data.basicStats.trialingCount}人</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>未到岗:</span>
+                    <span className="font-medium">{data.basicStats.noShowCount}人</span>
                   </div>
                 </div>
               </div>
 
               <div className="bg-green-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-green-900 mb-2">录用情况</h3>
+                <h3 className="font-semibold text-green-900 mb-2">转正情况</h3>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span>已录用:</span>
-                    <span className="font-medium">{data.basicStats.hiredCount}人</span>
+                    <span>已转正:</span>
+                    <span className="font-medium">{data.basicStats.regularizedCount}人</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>录用率:</span>
-                    <span className="font-medium">{data.basicStats.hireRate.toFixed(1)}%</span>
+                    <span>转正率:</span>
+                    <span className="font-medium">{data.basicStats.regularizationRate.toFixed(1)}%</span>
                   </div>
                 </div>
               </div>

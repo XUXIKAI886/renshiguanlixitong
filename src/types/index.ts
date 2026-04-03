@@ -9,12 +9,14 @@ export interface RecruitmentRecord {
   idCard?: string;
   phone: string;
   appliedPosition?: string; // 新增：应聘岗位
-  trialDate?: Date;
-  hasTrial: boolean;
+  arrivalDate?: Date;
+  regularizedDate?: Date;
+  trialDate?: Date; // 兼容旧数据
+  hasTrial?: boolean; // 兼容旧数据
   trialDays?: number;
-  trialStatus?: 'excellent' | 'good' | 'average' | 'poor';
+  trialStatus?: 'excellent' | 'good' | 'average' | 'poor'; // 兼容旧数据
   resignationReason?: string;
-  recruitmentStatus: 'interviewing' | 'trial' | 'hired' | 'rejected';
+  recruitmentStatus: 'pending_arrival' | 'no_show' | 'trialing' | 'regularized' | 'rejected';
   createdAt?: Date;
   updatedAt?: Date;
 }

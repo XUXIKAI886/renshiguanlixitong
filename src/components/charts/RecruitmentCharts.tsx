@@ -25,10 +25,11 @@ interface MonthlyTrendProps {
   data: Array<{
     month: string;
     total: number;
-    hired: number;
+    pendingArrival: number;
+    noShow: number;
+    trialing: number;
+    regularized: number;
     rejected: number;
-    interviewing: number;
-    trial: number;
   }>;
 }
 
@@ -56,15 +57,15 @@ export function MonthlyTrendChart({ data }: MonthlyTrendProps) {
             />
             <Area
               type="monotone"
-              dataKey="hired"
+              dataKey="regularized"
               stackId="2"
               stroke="#82ca9d"
               fill="#82ca9d"
-              name="已录用"
+              name="已转正"
             />
             <Area
               type="monotone"
-              dataKey="trial"
+              dataKey="trialing"
               stackId="2"
               stroke="#ffc658"
               fill="#ffc658"
@@ -72,11 +73,19 @@ export function MonthlyTrendChart({ data }: MonthlyTrendProps) {
             />
             <Area
               type="monotone"
-              dataKey="interviewing"
+              dataKey="pendingArrival"
               stackId="2"
               stroke="#ff7300"
               fill="#ff7300"
-              name="面试中"
+              name="可试岗待到岗"
+            />
+            <Area
+              type="monotone"
+              dataKey="noShow"
+              stackId="2"
+              stroke="#94a3b8"
+              fill="#94a3b8"
+              name="未到岗"
             />
             <Area
               type="monotone"
@@ -102,7 +111,7 @@ interface StatusDistributionProps {
   }>;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#94A3B8'];
 
 export function StatusDistributionChart({ data }: StatusDistributionProps) {
   return (
@@ -137,21 +146,21 @@ export function StatusDistributionChart({ data }: StatusDistributionProps) {
   );
 }
 
-// 试岗通过率趋势图
-interface TrialPassRateProps {
+// 转正趋势图
+interface RegularizationTrendProps {
   data: Array<{
     month: string;
-    total: number;
-    passed: number;
-    passRate: number;
+    arrived: number;
+    regularized: number;
+    regularizationRate: number;
   }>;
 }
 
-export function TrialPassRateChart({ data }: TrialPassRateProps) {
+export function RegularizationTrendChart({ data }: RegularizationTrendProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>试岗通过率趋势</CardTitle>
+        <CardTitle>转正率趋势</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
@@ -162,15 +171,15 @@ export function TrialPassRateChart({ data }: TrialPassRateProps) {
             <YAxis yAxisId="right" orientation="right" />
             <Tooltip />
             <Legend />
-            <Bar yAxisId="left" dataKey="total" fill="#8884d8" name="试岗总人数" />
-            <Bar yAxisId="left" dataKey="passed" fill="#82ca9d" name="通过人数" />
+            <Bar yAxisId="left" dataKey="arrived" fill="#8884d8" name="到岗人数" />
+            <Bar yAxisId="left" dataKey="regularized" fill="#82ca9d" name="转正人数" />
             <Line
               yAxisId="right"
               type="monotone"
-              dataKey="passRate"
+              dataKey="regularizationRate"
               stroke="#ff7300"
               strokeWidth={2}
-              name="通过率(%)"
+              name="转正率(%)"
             />
           </BarChart>
         </ResponsiveContainer>
@@ -184,8 +193,8 @@ interface ChannelAnalysisProps {
   data: Array<{
     channel: string;
     total: number;
-    hired: number;
-    hireRate: number;
+    regularized: number;
+    regularizationRate: number;
   }>;
 }
 
@@ -204,7 +213,7 @@ export function ChannelAnalysisChart({ data }: ChannelAnalysisProps) {
             <Tooltip />
             <Legend />
             <Bar dataKey="total" fill="#8884d8" name="总面试人数" />
-            <Bar dataKey="hired" fill="#82ca9d" name="录用人数" />
+            <Bar dataKey="regularized" fill="#82ca9d" name="转正人数" />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

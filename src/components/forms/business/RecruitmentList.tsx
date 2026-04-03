@@ -1,15 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/basic/button';
 import { Input } from '@/components/ui/form/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/form/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/layout/table';
 import { Badge } from '@/components/ui/basic/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/interaction/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/interaction/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/layout/dropdown-menu';
 import { IdCardDisplay } from '@/components/ui/form/id-card-display';
 import { PasswordVerification } from '@/components/ui/form/password-verification';
@@ -19,7 +16,6 @@ import {
   Edit,
   Trash2,
   MoreHorizontal,
-  Filter,
   Download,
   Users,
   UserCheck,
@@ -27,7 +23,7 @@ import {
   Clock
 } from 'lucide-react';
 import { RecruitmentRecord } from '@/types';
-import { GENDER_LABELS, TRIAL_STATUS_LABELS, RECRUITMENT_STATUS_LABELS } from '@/constants';
+import { GENDER_LABELS, RECRUITMENT_STATUS_LABELS } from '@/constants';
 import { formatDate } from '@/utils';
 import { exportToExcel, formatRecruitmentDataForExport } from '@/utils/export';
 import { toast } from 'sonner';
@@ -39,7 +35,7 @@ interface RecruitmentListProps {
   limit: number;
   onPageChange: (page: number) => void;
   onSearch: (keyword: string) => void;
-  onFilter: (filters: any) => void;
+  onFilter: (filters: { status?: string }) => void;
   onEdit: (record: RecruitmentRecord) => void;
   onDelete: (id: string) => void;
   onAdd: () => void;
@@ -48,9 +44,10 @@ interface RecruitmentListProps {
 
 // 状态颜色映射
 const statusColors = {
-  interviewing: 'bg-blue-100 text-blue-800',
-  trial: 'bg-yellow-100 text-yellow-800',
-  hired: 'bg-green-100 text-green-800',
+  pending_arrival: 'bg-blue-100 text-blue-800',
+  no_show: 'bg-gray-100 text-gray-800',
+  trialing: 'bg-yellow-100 text-yellow-800',
+  regularized: 'bg-green-100 text-green-800',
   rejected: 'bg-red-100 text-red-800',
 };
 
@@ -69,11 +66,8 @@ export default function RecruitmentList({
 }: RecruitmentListProps) {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [showFilters, setShowFilters] = useState(false);
   const [overviewStats, setOverviewStats] = useState<any>(null);
   const [statsLoading, setStatsLoading] = useState(true);
-
-  // 密码验证相关状态
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState<{
     type: 'edit' | 'delete';
@@ -82,7 +76,6 @@ export default function RecruitmentList({
 
   const totalPages = Math.ceil(total / limit);
 
-  // 获取概览统计数据
   const fetchOverviewStats = async () => {
     try {
       const response = await fetch('/api/recruitment/overview');
@@ -116,31 +109,26 @@ export default function RecruitmentList({
     }
   };
 
-  // 处理编辑操作
   const handleEditClick = (record: RecruitmentRecord) => {
     setPendingAction({ type: 'edit', record });
     setShowPasswordDialog(true);
   };
 
-  // 处理删除操作
   const handleDeleteClick = (record: RecruitmentRecord) => {
     setPendingAction({ type: 'delete', record });
     setShowPasswordDialog(true);
   };
 
-  // 密码验证成功后执行操作
   const handlePasswordSuccess = () => {
-    if (pendingAction) {
-      if (pendingAction.type === 'edit') {
-        onEdit(pendingAction.record);
-      } else if (pendingAction.type === 'delete') {
-        onDelete(pendingAction.record._id!);
-      }
-      setPendingAction(null);
+    if (!pendingAction) return;
+    if (pendingAction.type === 'edit') {
+      onEdit(pendingAction.record);
+    } else {
+      onDelete(pendingAction.record._id!);
     }
+    setPendingAction(null);
   };
 
-  // 关闭密码对话框
   const handlePasswordClose = () => {
     setShowPasswordDialog(false);
     setPendingAction(null);
@@ -166,7 +154,6 @@ export default function RecruitmentList({
     }
   };
 
-  // 统计卡片配置
   const statsConfig = [
     {
       key: 'totalRecruitment',
@@ -176,15 +163,15 @@ export default function RecruitmentList({
       bgColor: 'bg-blue-100'
     },
     {
-      key: 'trialRate',
-      title: '试岗率',
+      key: 'pendingArrivalCount',
+      title: '待到岗人数',
       icon: UserCheck,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100'
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-100'
     },
     {
-      key: 'trialResignationRate',
-      title: '试岗离职率',
+      key: 'noShowCount',
+      title: '未到岗人数',
       icon: UserX,
       color: 'text-red-600',
       bgColor: 'bg-red-100'
@@ -200,7 +187,6 @@ export default function RecruitmentList({
 
   return (
     <div className="space-y-6">
-      {/* 统计概览卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statsConfig.map((statConfig) => {
           const Icon = statConfig.icon;
@@ -219,9 +205,7 @@ export default function RecruitmentList({
                         {statsLoading ? '...' : (statData?.value || '0')}
                       </p>
                       {statData?.unit && (
-                        <span className="text-sm text-muted-foreground">
-                          {statData.unit}
-                        </span>
+                        <span className="text-sm text-muted-foreground">{statData.unit}</span>
                       )}
                     </div>
                   </div>
@@ -235,7 +219,6 @@ export default function RecruitmentList({
         })}
       </div>
 
-      {/* 头部操作栏 */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -254,7 +237,6 @@ export default function RecruitmentList({
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4">
-            {/* 搜索框 */}
             <div className="flex-1 flex gap-2">
               <Input
                 placeholder="搜索姓名、手机号或身份证号..."
@@ -268,10 +250,9 @@ export default function RecruitmentList({
               </Button>
             </div>
 
-            {/* 筛选器 */}
             <div className="flex gap-2">
               <Select value={statusFilter} onValueChange={handleStatusFilter}>
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="筛选状态" />
                 </SelectTrigger>
                 <SelectContent>
@@ -283,60 +264,11 @@ export default function RecruitmentList({
                   ))}
                 </SelectContent>
               </Select>
-
-              <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
-                <Filter className="h-4 w-4 mr-2" />
-                更多筛选
-              </Button>
-
-              <Button variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                导出
-              </Button>
             </div>
           </div>
-
-          {/* 扩展筛选器 */}
-          {showFilters && (
-            <div className="mt-4 p-4 border rounded-lg bg-muted/50">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium">面试开始日期</label>
-                  <Input type="date" className="mt-1" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">面试结束日期</label>
-                  <Input type="date" className="mt-1" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">性别</label>
-                  <Select>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="选择性别" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">全部</SelectItem>
-                      {Object.entries(GENDER_LABELS).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 mt-4">
-                <Button variant="outline" onClick={() => setShowFilters(false)}>
-                  取消
-                </Button>
-                <Button>应用筛选</Button>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
-      {/* 数据表格 */}
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -350,10 +282,8 @@ export default function RecruitmentList({
                   <TableHead>电话</TableHead>
                   <TableHead>应聘岗位</TableHead>
                   <TableHead>面试日期</TableHead>
-                  <TableHead>是否试岗</TableHead>
-                  <TableHead>试岗日期</TableHead>
+                  <TableHead>到岗日期</TableHead>
                   <TableHead>试岗天数</TableHead>
-                  <TableHead>试岗状态</TableHead>
                   <TableHead>备注内容</TableHead>
                   <TableHead>招聘状态</TableHead>
                   <TableHead>创建时间</TableHead>
@@ -363,69 +293,35 @@ export default function RecruitmentList({
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={14} className="text-center py-8">
+                    <TableCell colSpan={13} className="text-center py-8">
                       加载中...
                     </TableCell>
                   </TableRow>
                 ) : records.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={14} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={13} className="text-center py-8 text-muted-foreground">
                       暂无数据
                     </TableCell>
                   </TableRow>
                 ) : (
                   records.map((record) => (
                     <TableRow key={record._id}>
-                      <TableCell className="font-medium">
-                        {record.candidateName}
-                      </TableCell>
-                      <TableCell>
-                        {GENDER_LABELS[record.gender]}
-                      </TableCell>
+                      <TableCell className="font-medium">{record.candidateName}</TableCell>
+                      <TableCell>{GENDER_LABELS[record.gender]}</TableCell>
                       <TableCell className="text-center">
-                        {record.age ? (
-                          <span className="font-medium text-blue-600">
-                            {record.age}岁
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 text-sm">未填写</span>
-                        )}
+                        {record.age ? <span className="font-medium text-blue-600">{record.age}岁</span> : '-'}
                       </TableCell>
                       <TableCell>
-                        {record.idCard ? (
-                          <IdCardDisplay idCard={record.idCard} />
-                        ) : (
-                          <span className="text-gray-400 text-sm">未填写</span>
-                        )}
+                        {record.idCard ? <IdCardDisplay idCard={record.idCard} /> : <span className="text-gray-400 text-sm">未填写</span>}
                       </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {record.phone}
-                      </TableCell>
+                      <TableCell className="font-mono text-sm">{record.phone}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">
-                          {record.appliedPosition || '未分配'}
-                        </Badge>
+                        <Badge variant="outline">{record.appliedPosition || '未分配'}</Badge>
                       </TableCell>
-                      <TableCell>
-                        {formatDate(record.interviewDate)}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant={record.hasTrial ? "default" : "outline"}>
-                          {record.hasTrial ? "是" : "否"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {record.trialDate ? formatDate(record.trialDate) : '-'}
-                      </TableCell>
+                      <TableCell>{formatDate(record.interviewDate)}</TableCell>
+                      <TableCell>{record.arrivalDate ? formatDate(record.arrivalDate) : '-'}</TableCell>
                       <TableCell className="text-center">
                         {record.trialDays ? `${record.trialDays} 天` : '-'}
-                      </TableCell>
-                      <TableCell>
-                        {record.trialStatus ? (
-                          <Badge variant="secondary">
-                            {TRIAL_STATUS_LABELS[record.trialStatus]}
-                          </Badge>
-                        ) : '-'}
                       </TableCell>
                       <TableCell className="max-w-48 min-w-32">
                         <div className="whitespace-normal break-words text-sm leading-relaxed">
@@ -433,7 +329,7 @@ export default function RecruitmentList({
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={statusColors[record.recruitmentStatus]}>
+                        <Badge className={statusColors[record.recruitmentStatus as keyof typeof statusColors]}>
                           {RECRUITMENT_STATUS_LABELS[record.recruitmentStatus]}
                         </Badge>
                       </TableCell>
@@ -468,7 +364,6 @@ export default function RecruitmentList({
         </CardContent>
       </Card>
 
-      {/* 分页 */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
@@ -493,7 +388,6 @@ export default function RecruitmentList({
         </div>
       )}
 
-      {/* 密码验证对话框 */}
       <PasswordVerification
         isOpen={showPasswordDialog}
         onClose={handlePasswordClose}

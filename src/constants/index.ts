@@ -26,16 +26,18 @@ export const SCORE_BEHAVIORS = {
 
 // 招聘状态常量
 export const RECRUITMENT_STATUS = {
-  INTERVIEWING: 'interviewing',
-  TRIAL: 'trial',
-  HIRED: 'hired',
+  PENDING_ARRIVAL: 'pending_arrival',
+  NO_SHOW: 'no_show',
+  TRIALING: 'trialing',
+  REGULARIZED: 'regularized',
   REJECTED: 'rejected',
 } as const;
 
 export const RECRUITMENT_STATUS_LABELS = {
-  [RECRUITMENT_STATUS.INTERVIEWING]: '面试中',
-  [RECRUITMENT_STATUS.TRIAL]: '试岗中',
-  [RECRUITMENT_STATUS.HIRED]: '已录用',
+  [RECRUITMENT_STATUS.PENDING_ARRIVAL]: '可试岗待到岗',
+  [RECRUITMENT_STATUS.NO_SHOW]: '未到岗',
+  [RECRUITMENT_STATUS.TRIALING]: '试岗中',
+  [RECRUITMENT_STATUS.REGULARIZED]: '已转正',
   [RECRUITMENT_STATUS.REJECTED]: '已拒绝',
 };
 
