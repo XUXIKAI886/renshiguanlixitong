@@ -263,30 +263,30 @@ export default function RecruitmentList({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         {statsConfig.map((statConfig) => {
           const Icon = statConfig.icon;
           const statData = overviewStats?.[statConfig.key];
 
           return (
             <Card key={statConfig.key}>
-              <CardContent className="p-6">
+              <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-muted-foreground leading-tight">
                       {statConfig.title}
                     </p>
-                    <div className="flex items-baseline gap-1">
-                      <p className="text-2xl font-bold">
+                    <div className="mt-1 flex items-baseline gap-1">
+                      <p className="text-xl font-bold leading-none">
                         {statsLoading ? '...' : (statData?.value || '0')}
                       </p>
                       {statData?.unit && (
-                        <span className="text-sm text-muted-foreground">{statData.unit}</span>
+                        <span className="text-xs text-muted-foreground">{statData.unit}</span>
                       )}
                     </div>
                   </div>
-                  <div className={`p-3 rounded-full ${statConfig.bgColor} ${statConfig.color}`}>
-                    <Icon className="h-5 w-5" />
+                  <div className={`shrink-0 p-2 rounded-full ${statConfig.bgColor} ${statConfig.color}`}>
+                    <Icon className="h-4 w-4" />
                   </div>
                 </div>
               </CardContent>
