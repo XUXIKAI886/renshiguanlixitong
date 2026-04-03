@@ -241,42 +241,42 @@ export default function EmployeeList({
   return (
     <div className="space-y-6">
       {/* 统计概览卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statsConfig.map((statConfig) => {
           const Icon = statConfig.icon;
           const statData = overviewStats?.[statConfig.key];
 
           return (
             <Card key={statConfig.key}>
-              <CardContent className="p-6">
+              <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-muted-foreground">
+                    <p className="text-xs font-medium text-muted-foreground">
                       {statConfig.title}
                     </p>
-                    <div className="flex items-baseline gap-1 mt-2">
+                    <div className="flex items-baseline gap-1 mt-1">
                       {statConfig.key === 'topScoreEmployee' ? (
                         <div className="space-y-1">
                           {statsLoading ? (
-                            <p className="text-lg font-bold">...</p>
+                            <p className="text-base font-bold">...</p>
                           ) : statData?.value ? (
                             <>
-                              <p className="text-lg font-bold">{statData.value.name}</p>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-base font-bold">{statData.value.name}</p>
+                              <p className="text-xs text-muted-foreground">
                                 {statData.value.score}分 | {statData.value.department} | {statData.value.position}
                               </p>
                             </>
                           ) : (
-                            <p className="text-lg font-bold">暂无数据</p>
+                            <p className="text-base font-bold">暂无数据</p>
                           )}
                         </div>
                       ) : (
                         <>
-                          <p className="text-2xl font-bold">
+                          <p className="text-xl font-bold">
                             {statsLoading ? '...' : (statData?.value || '0')}
                           </p>
                           {statData?.unit && (
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-xs text-muted-foreground">
                               {statData.unit}
                             </span>
                           )}
@@ -284,8 +284,8 @@ export default function EmployeeList({
                       )}
                     </div>
                   </div>
-                  <div className={`p-3 rounded-full ${statConfig.bgColor} ${statConfig.color}`}>
-                    <Icon className="h-5 w-5" />
+                  <div className={`p-2 rounded-full ${statConfig.bgColor} ${statConfig.color}`}>
+                    <Icon className="h-4 w-4" />
                   </div>
                 </div>
               </CardContent>
