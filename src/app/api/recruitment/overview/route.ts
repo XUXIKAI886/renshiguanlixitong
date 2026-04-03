@@ -16,11 +16,9 @@ export async function GET() {
     const totalRecruitment = records.length;
     const pendingArrivalCount = records.filter(record => record.recruitmentStatus === 'pending_arrival').length;
     const noShowCount = records.filter(record => record.recruitmentStatus === 'no_show').length;
-
-    const trialDayRecords = records.filter(record => typeof record.trialDays === 'number' && record.trialDays > 0);
-    const avgTrialDays = trialDayRecords.length > 0
-      ? trialDayRecords.reduce((sum, record) => sum + (record.trialDays || 0), 0) / trialDayRecords.length
-      : 0;
+    const trialingCount = records.filter(record => record.recruitmentStatus === 'trialing').length;
+    const regularizedCount = records.filter(record => record.recruitmentStatus === 'regularized').length;
+    const rejectedCount = records.filter(record => record.recruitmentStatus === 'rejected').length;
 
     const overviewStats = {
       totalRecruitment: {
@@ -35,10 +33,17 @@ export async function GET() {
         value: noShowCount,
         label: '未到岗人数'
       },
-      avgTrialDays: {
-        value: Math.round(avgTrialDays * 10) / 10,
-        label: '平均试岗天数',
-        unit: '天'
+      trialingCount: {
+        value: trialingCount,
+        label: '试岗中人数'
+      },
+      regularizedCount: {
+        value: regularizedCount,
+        label: '已转正人数'
+      },
+      rejectedCount: {
+        value: rejectedCount,
+        label: '已拒绝人数'
       }
     };
 

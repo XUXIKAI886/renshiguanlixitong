@@ -231,11 +231,25 @@ export default function RecruitmentList({
       bgColor: 'bg-red-100'
     },
     {
-      key: 'avgTrialDays',
-      title: '平均试岗天数',
+      key: 'trialingCount',
+      title: '试岗中人数',
       icon: Clock,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100'
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-100'
+    },
+    {
+      key: 'regularizedCount',
+      title: '已转正人数',
+      icon: UserCheck,
+      color: 'text-green-600',
+      bgColor: 'bg-green-100'
+    },
+    {
+      key: 'rejectedCount',
+      title: '已拒绝人数',
+      icon: UserX,
+      color: 'text-rose-600',
+      bgColor: 'bg-rose-100'
     }
   ];
 
@@ -249,7 +263,7 @@ export default function RecruitmentList({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {statsConfig.map((statConfig) => {
           const Icon = statConfig.icon;
           const statData = overviewStats?.[statConfig.key];
