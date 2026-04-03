@@ -53,6 +53,7 @@ export function formatEmployeeDataForExport(employees: any[]) {
 export function formatRecruitmentDataForExport(records: any[]) {
   return records.map(record => ({
     '姓名': record.candidateName,
+    '城市': record.city || '宜昌',
     '性别': record.gender === 'male' ? '男' : '女',
     '身份证号': record.idCard,
     '电话': record.phone,

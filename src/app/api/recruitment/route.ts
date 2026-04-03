@@ -8,11 +8,13 @@ import {
   normalizeRecruitmentRecord,
   requiresArrivalDate,
 } from '@/utils/recruitment';
+import { syncEmployeeFromRecruitment } from '@/utils/recruitment-to-employee';
 
 // 招聘记录验证模式
 const recruitmentRecordSchema = z.object({
   interviewDate: z.string().transform((str) => new Date(str)),
   candidateName: z.string().min(2, '姓名至少2个字符').max(20, '姓名最多20个字符'),
+  city: z.enum(['宜昌', '武汉'], { message: '请选择城市' }).default('宜昌'),
   gender: z.enum(['male', 'female'], { message: '性别只能是男或女' }),
   age: z.number().int('年龄必须是整数').min(16, '年龄不能小于16岁').max(70, '年龄不能大于70岁'),
   idCard: z.string().optional().refine((val) => {
@@ -155,6 +157,18 @@ export async function POST(request: NextRequest) {
       regularizedDate
     );
 
+    if (validatedData.recruitmentStatus === 'regularized') {
+      await syncEmployeeFromRecruitment({
+        candidateName: validatedData.candidateName,
+        city: validatedData.city,
+        gender: validatedData.gender,
+        phone: validatedData.phone,
+        idCard: validatedData.idCard,
+        arrivalDate: validatedData.arrivalDate,
+        appliedPosition: validatedData.appliedPosition
+      });
+    }
+
     const newRecord = new RecruitmentRecord({
       ...validatedData,
       regularizedDate,
@@ -195,6 +209,13 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+    }
+
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 400 }
+      );
     }
 
     return NextResponse.json(

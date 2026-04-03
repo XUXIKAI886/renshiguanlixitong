@@ -10,11 +10,13 @@ import {
   normalizeRecruitmentStatus,
   requiresArrivalDate,
 } from '@/utils/recruitment';
+import { syncEmployeeFromRecruitment } from '@/utils/recruitment-to-employee';
 
 // 招聘记录更新验证模式
 const updateRecruitmentRecordSchema = z.object({
   interviewDate: z.string().transform((str) => new Date(str)).optional(),
   candidateName: z.string().min(2, '姓名至少2个字符').max(20, '姓名最多20个字符').optional(),
+  city: z.enum(['宜昌', '武汉'], { message: '请选择城市' }).optional(),
   gender: z.enum(['male', 'female'], { message: '性别只能是男或女' }).optional(),
   age: z.union([
     z.number().int('年龄必须是整数').min(16, '年龄不能小于16岁').max(70, '年龄不能大于70岁'),
@@ -169,6 +171,18 @@ export async function PUT(
       )
     };
 
+    if (nextStatus === 'regularized') {
+      await syncEmployeeFromRecruitment({
+        candidateName: validatedData.candidateName || existingRecord.candidateName,
+        city: validatedData.city || existingRecord.city || '宜昌',
+        gender: validatedData.gender || existingRecord.gender,
+        phone: validatedData.phone || existingRecord.phone,
+        idCard: validatedData.idCard ?? existingRecord.idCard,
+        arrivalDate: nextArrivalDate,
+        appliedPosition: validatedData.appliedPosition || existingRecord.appliedPosition
+      });
+    }
+
     const updatedRecord = await RecruitmentRecord.findByIdAndUpdate(
       id,
       { $set: updateData },
@@ -197,6 +211,13 @@ export async function PUT(
     if (typeof error === 'object' && error && 'code' in error && error.code === 11000) {
       return NextResponse.json(
         { success: false, error: '身份证号或手机号已存在' },
+        { status: 400 }
+      );
+    }
+
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { success: false, error: error.message },
         { status: 400 }
       );
     }

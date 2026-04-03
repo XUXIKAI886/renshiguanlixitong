@@ -40,6 +40,15 @@ const RecruitmentRecordSchema = new Schema<RecruitmentRecordDocument>(
       trim: true,
       default: ''
     },
+    city: {
+      type: String,
+      trim: true,
+      enum: {
+        values: ['宜昌', '武汉'],
+        message: '请选择有效的城市'
+      },
+      default: '宜昌'
+    },
     gender: {
       type: String,
       required: [true, '性别不能为空'],
@@ -153,6 +162,7 @@ const RecruitmentRecordSchema = new Schema<RecruitmentRecordDocument>(
 
 // 创建索引
 RecruitmentRecordSchema.index({ candidateName: 1 });
+RecruitmentRecordSchema.index({ city: 1 });
 RecruitmentRecordSchema.index({ interviewDate: -1 });
 RecruitmentRecordSchema.index({ recruitmentStatus: 1 });
 RecruitmentRecordSchema.index({ age: 1 });

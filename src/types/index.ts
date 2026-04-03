@@ -4,6 +4,7 @@ export interface RecruitmentRecord {
   interviewDate: Date;
   candidateName: string;
   recruitmentChannel?: string;
+  city?: '宜昌' | '武汉';
   gender: 'male' | 'female';
   age: number;
   idCard?: string;

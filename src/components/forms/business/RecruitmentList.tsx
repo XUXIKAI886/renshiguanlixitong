@@ -493,6 +493,10 @@ export default function RecruitmentList({
                   <p className="font-medium">{detailRecord.candidateName}</p>
                 </div>
                 <div>
+                  <p className="text-muted-foreground">城市</p>
+                  <p className="font-medium">{detailRecord.city || '宜昌'}</p>
+                </div>
+                <div>
                   <p className="text-muted-foreground">电话</p>
                   <p className="font-medium">{detailRecord.phone}</p>
                 </div>

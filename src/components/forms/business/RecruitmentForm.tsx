@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/form/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form/form';
 import { RecruitmentRecord } from '@/types';
-import { GENDER_LABELS, RECRUITMENT_STATUS_LABELS, POSITIONS } from '@/constants';
+import { CITIES, GENDER_LABELS, RECRUITMENT_STATUS_LABELS, POSITIONS } from '@/constants';
 import {
   calculateTrialDays,
   getArrivalDate,
@@ -24,6 +24,7 @@ import {
 const formSchema = z.object({
   interviewDate: z.string().min(1, '面试日期不能为空'),
   candidateName: z.string().min(2, '姓名至少2个字符').max(20, '姓名最多20个字符'),
+  city: z.enum(['宜昌', '武汉'], { message: '请选择城市' }),
   gender: z.enum(['male', 'female'], { message: '请选择性别' }),
   age: z.string().min(1, '年龄不能为空').refine((val) => {
     const num = parseInt(val);
@@ -72,6 +73,7 @@ export default function RecruitmentForm({
         ? format(new Date(initialData.interviewDate), 'yyyy-MM-dd')
         : '',
       candidateName: initialData?.candidateName || '',
+      city: initialData?.city || '宜昌',
       gender: initialData?.gender || 'male',
       age: initialData?.age?.toString() || '',
       idCard: initialData?.idCard || '',
@@ -162,6 +164,31 @@ export default function RecruitmentForm({
                         {Object.entries(GENDER_LABELS).map(([value, label]) => (
                           <SelectItem key={value} value={value}>
                             {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>城市 *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="请选择城市" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {CITIES.map((city) => (
+                          <SelectItem key={city} value={city}>
+                            {city}
                           </SelectItem>
                         ))}
                       </SelectContent>
