@@ -20,12 +20,12 @@ const EmployeeSchema = new Schema<EmployeeDocument>(
     },
     regularDate: {
       type: Date,
-      required: [true, '转正日期不能为空'],
+      required: [true, '入司日期不能为空'],
       validate: {
         validator: function(value: Date) {
           return value <= new Date();
         },
-        message: '转正日期不能晚于当前日期'
+        message: '入司日期不能晚于当前日期'
       }
     },
     name: {

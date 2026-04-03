@@ -13,7 +13,7 @@ export async function GET() {
     // 2. 在职员工数
     const activeEmployees = await Employee.countDocuments({ workStatus: 'active' });
 
-    // 3. 平均在职天数（计算从转正日期到现在的天数）
+    // 3. 平均在职天数（计算从入司日期到现在的天数）
     const avgWorkDaysResult = await Employee.aggregate([
       {
         $match: {

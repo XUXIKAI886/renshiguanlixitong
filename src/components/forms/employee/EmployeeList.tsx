@@ -357,11 +357,11 @@ export default function EmployeeList({
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">转正开始日期</label>
+                  <label className="text-sm font-medium">入司开始日期</label>
                   <Input type="date" className="mt-1" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">转正结束日期</label>
+                  <label className="text-sm font-medium">入司结束日期</label>
                   <Input type="date" className="mt-1" />
                 </div>
               </div>
@@ -393,7 +393,7 @@ export default function EmployeeList({
                   <TableHead>在职状况</TableHead>
                   <TableHead>在职天数</TableHead>
                   <TableHead>总积分</TableHead>
-                  <TableHead>转正日期</TableHead>
+                  <TableHead>入司日期</TableHead>
                   <TableHead>今日日期</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>

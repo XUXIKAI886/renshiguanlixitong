@@ -43,7 +43,7 @@ export function formatEmployeeDataForExport(employees: any[]) {
       ? calculateWorkingDays(new Date(employee.regularDate))
       : employee.workingDays,
     '总积分': employee.totalScore,
-    '转正日期': new Date(employee.regularDate).toLocaleDateString('zh-CN'),
+    '入司日期': new Date(employee.regularDate).toLocaleDateString('zh-CN'),
     '今日日期': new Date().toLocaleDateString('zh-CN')
   }));
 }

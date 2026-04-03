@@ -16,7 +16,7 @@ import { GENDER_LABELS, WORK_STATUS_LABELS, DEPARTMENTS, POSITIONS } from '@/con
 
 // 表单验证模式
 const formSchema = z.object({
-  regularDate: z.string().min(1, '转正日期不能为空'),
+  regularDate: z.string().min(1, '入司日期不能为空'),
   name: z.string()
     .min(2, '姓名至少2个字符')
     .max(20, '姓名最多20个字符')
@@ -92,7 +92,7 @@ export default function EmployeeForm({
                 name="regularDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>转正日期 *</FormLabel>
+                    <FormLabel>入司日期 *</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>

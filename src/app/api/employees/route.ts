@@ -5,7 +5,7 @@ import { Employee } from '@/models';
 
 // 员工创建验证模式
 const createEmployeeSchema = z.object({
-  regularDate: z.string().min(1, '转正日期不能为空'),
+  regularDate: z.string().min(1, '入司日期不能为空'),
   name: z.string()
     .min(2, '姓名至少2个字符')
     .max(20, '姓名最多20个字符')
