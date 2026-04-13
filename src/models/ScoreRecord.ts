@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, PipelineStage } from 'mongoose';
 import { ScoreRecord as IScoreRecord } from '@/types';
 
 // 扩展Document接口
@@ -83,7 +83,7 @@ const ScoreRecordSchema = new Schema<ScoreRecordDocument>(
     toJSON: {
       transform: function(doc, ret) {
         ret.id = ret._id;
-        delete ret._id;
+        delete (ret as { _id?: string })._id;
         return ret;
       }
     }
@@ -103,12 +103,13 @@ ScoreRecordSchema.statics.getEmployeeScoreHistory = async function(
   startDate?: Date, 
   endDate?: Date
 ) {
-  const query: any = { employeeId };
+  const query: Record<string, unknown> = { employeeId };
   
   if (startDate || endDate) {
-    query.recordDate = {};
-    if (startDate) query.recordDate.$gte = startDate;
-    if (endDate) query.recordDate.$lte = endDate;
+    const recordDateQuery: Record<string, Date> = {};
+    if (startDate) recordDateQuery.$gte = startDate;
+    if (endDate) recordDateQuery.$lte = endDate;
+    query.recordDate = recordDateQuery;
   }
   
   return await this.find(query)
@@ -121,15 +122,16 @@ ScoreRecordSchema.statics.getScoreStatistics = async function(
   startDate?: Date,
   endDate?: Date
 ) {
-  const matchStage: any = {};
+  const matchStage: Record<string, unknown> = {};
   
   if (startDate || endDate) {
-    matchStage.recordDate = {};
-    if (startDate) matchStage.recordDate.$gte = startDate;
-    if (endDate) matchStage.recordDate.$lte = endDate;
+    const recordDateQuery: Record<string, Date> = {};
+    if (startDate) recordDateQuery.$gte = startDate;
+    if (endDate) recordDateQuery.$lte = endDate;
+    matchStage.recordDate = recordDateQuery;
   }
   
-  const pipeline = [];
+  const pipeline: PipelineStage[] = [];
   
   if (Object.keys(matchStage).length > 0) {
     pipeline.push({ $match: matchStage });
@@ -144,7 +146,7 @@ ScoreRecordSchema.statics.getScoreStatistics = async function(
         avgScore: { $avg: '$scoreChange' }
       }
     },
-    { $sort: { totalScore: -1 } }
+    { $sort: { totalScore: -1 as const } }
   );
   
   return await this.aggregate(pipeline);
@@ -186,15 +188,16 @@ ScoreRecordSchema.statics.getDepartmentComparison = async function(
   startDate?: Date,
   endDate?: Date
 ) {
-  const matchStage: any = {};
+  const matchStage: Record<string, unknown> = {};
   
   if (startDate || endDate) {
-    matchStage.recordDate = {};
-    if (startDate) matchStage.recordDate.$gte = startDate;
-    if (endDate) matchStage.recordDate.$lte = endDate;
+    const recordDateQuery: Record<string, Date> = {};
+    if (startDate) recordDateQuery.$gte = startDate;
+    if (endDate) recordDateQuery.$lte = endDate;
+    matchStage.recordDate = recordDateQuery;
   }
   
-  const pipeline = [
+  const pipeline: PipelineStage[] = [
     {
       $lookup: {
         from: 'employees',
@@ -225,7 +228,7 @@ ScoreRecordSchema.statics.getDepartmentComparison = async function(
         }
       }
     },
-    { $sort: { totalScore: -1 } }
+    { $sort: { totalScore: -1 as const } }
   ];
   
   if (Object.keys(matchStage).length > 0) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import connectDB from '@/lib/mongodb';
 import { AnnualAward, Employee } from '@/models';
+import { getZodIssueDetails, isMongoDuplicateKeyError } from '@/utils/api-errors';
 
 // 年度评优更新验证模式
 const updateAwardSchema = z.object({
@@ -10,7 +11,7 @@ const updateAwardSchema = z.object({
   finalScore: z.number().min(0, '最终得分不能为负数').optional(),
   rank: z.number().int().min(1, '排名不能小于1').optional(),
   awardLevel: z.enum(['special', 'first', 'second', 'excellent'], {
-    errorMap: () => ({ message: '奖项等级只能是特等奖、一等奖、二等奖或优秀员工' })
+    message: '奖项等级只能是特等奖、一等奖、二等奖或优秀员工'
   }).optional(),
   bonusAmount: z.number().int().min(0, '奖金金额不能为负数').optional()
 });
@@ -121,6 +122,13 @@ export async function PUT(
       { new: true, runValidators: true }
     );
 
+    if (!updatedAward) {
+      return NextResponse.json(
+        { success: false, error: '年度评优记录不存在' },
+        { status: 404 }
+      );
+    }
+
     // 获取员工信息
     const employee = await Employee.findOne({ 
       employeeId: updatedAward.employeeId 
@@ -157,16 +165,13 @@ export async function PUT(
         { 
           success: false, 
           error: '数据验证失败',
-          details: error.errors.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
+          details: getZodIssueDetails(error)
         },
         { status: 400 }
       );
     }
 
-    if (error.code === 11000) {
+    if (isMongoDuplicateKeyError(error)) {
       return NextResponse.json(
         { success: false, error: '该员工在该年度已有评优记录' },
         { status: 400 }

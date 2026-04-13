@@ -133,7 +133,9 @@ export async function POST() {
         // 检查积分一致性
         let inconsistencies = 0;
         for (const employee of employees) {
-          const scoreRecord = scoreAggregation.find(s => s._id.toString() === employee._id.toString());
+          const scoreRecord = scoreAggregation.find(
+            (s) => String(s._id) === String(employee.employeeId)
+          );
           const calculatedScore = scoreRecord?.totalScore || 0;
           if (employee.totalScore !== calculatedScore) {
             inconsistencies++;
@@ -225,8 +227,22 @@ async function checkDataIntegrity<T>(name: string, check: () => Promise<T>) {
   }
 }
 
+interface PerformanceTestResult {
+  duration: number;
+  status: string;
+}
+
+interface IntegrityCheckResult {
+  result?: {
+    passed?: boolean;
+  };
+}
+
 // 生成优化建议
-function generateRecommendations(dbTests: any[], integrityChecks: any[]) {
+function generateRecommendations(
+  dbTests: PerformanceTestResult[],
+  integrityChecks: IntegrityCheckResult[]
+) {
   const recommendations: string[] = [];
   
   // 检查慢查询

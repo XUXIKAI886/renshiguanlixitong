@@ -30,6 +30,38 @@ interface OverallStats {
   maxScore: number;
 }
 
+type AwardLevelKey = 'special' | 'first' | 'second' | 'excellent';
+
+interface AwardRecord {
+  _id: string;
+  year: number;
+  employeeId: {
+    _id: string;
+    employeeId: string;
+    name: string;
+    department: string;
+    position: string;
+  };
+  finalScore: number;
+  rank: number;
+  awardLevel: AwardLevelKey;
+  bonusAmount: number;
+  createdAt: string;
+}
+
+interface RankedEmployee {
+  employeeId: string;
+  employeeName: string;
+  department: string;
+  position: string;
+  awards: AwardRecord[];
+  totalBonus: number;
+  awardCount: number;
+  highestLevel: '特等奖' | '一等奖' | '二等奖' | '优秀员工';
+  bestRanking: number;
+  highestScore: number;
+}
+
 export default function AwardsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
@@ -41,7 +73,7 @@ export default function AwardsPage() {
     minScore: 0,
     maxScore: 0
   });
-  const [awards, setAwards] = useState<any[]>([]);
+  const [awards, setAwards] = useState<AwardRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // 获取总体统计数据
@@ -251,12 +283,17 @@ export default function AwardsPage() {
                 <div className="space-y-4">
                   {/* 排行榜列表 */}
                   {Array.isArray(awards) && awards
-                    .reduce((acc: any[], award) => {
-                      const employeeId = award.employeeId?.employeeId || award.employeeId;
-                      const employeeName = award.employeeId?.name || award.employeeName;
-                      const department = award.employeeId?.department || award.department;
-                      const position = award.employeeId?.position || award.position;
-                      const awardLevelMap = { 'special': '特等奖', 'first': '一等奖', 'second': '二等奖', 'excellent': '优秀员工' };
+                    .reduce((acc: RankedEmployee[], award) => {
+                      const employeeId = award.employeeId.employeeId;
+                      const employeeName = award.employeeId.name;
+                      const department = award.employeeId.department;
+                      const position = award.employeeId.position;
+                      const awardLevelMap: Record<AwardLevelKey, RankedEmployee['highestLevel']> = {
+                        special: '特等奖',
+                        first: '一等奖',
+                        second: '二等奖',
+                        excellent: '优秀员工'
+                      };
                       const awardLevel = awardLevelMap[award.awardLevel] || award.awardLevel;
 
                       const existing = acc.find(item => item.employeeId === employeeId);
@@ -265,7 +302,7 @@ export default function AwardsPage() {
                         existing.totalBonus += award.bonusAmount;
                         existing.awardCount += 1;
                         // 更新最高奖项等级
-                        const levelPriority = { '特等奖': 4, '一等奖': 3, '二等奖': 2, '优秀员工': 1 };
+                        const levelPriority: Record<RankedEmployee['highestLevel'], number> = { '特等奖': 4, '一等奖': 3, '二等奖': 2, '优秀员工': 1 };
                         if (levelPriority[awardLevel] > levelPriority[existing.highestLevel]) {
                           existing.highestLevel = awardLevel;
                           existing.bestRanking = award.rank;
@@ -291,7 +328,7 @@ export default function AwardsPage() {
                       if (a.awardCount !== b.awardCount) {
                         return b.awardCount - a.awardCount;
                       }
-                      const levelPriority = { '特等奖': 4, '一等奖': 3, '二等奖': 2, '优秀员工': 1 };
+                      const levelPriority: Record<RankedEmployee['highestLevel'], number> = { '特等奖': 4, '一等奖': 3, '二等奖': 2, '优秀员工': 1 };
                       return levelPriority[b.highestLevel] - levelPriority[a.highestLevel];
                     })
                     .map((employee, index) => (
@@ -339,11 +376,11 @@ export default function AwardsPage() {
       />
 
       {/* 生成评优对话框 */}
-      <AwardGenerate
-        open={isGenerateOpen}
-        onOpenChange={setIsGenerateOpen}
-        onSuccess={handleGenerateSuccess}
-      />
+        <AwardGenerate
+          open={isGenerateOpen}
+          onOpenChange={setIsGenerateOpen}
+          onSuccess={handleGenerateSuccess}
+        />
     </div>
   );
 }

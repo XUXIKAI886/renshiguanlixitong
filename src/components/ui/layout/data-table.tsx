@@ -6,13 +6,14 @@ import { Input } from '@/components/ui/form/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/form/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/layout/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
-import { Search, Filter, Download, Plus, RefreshCw } from 'lucide-react';
-import { TableLoading, EmptyState } from './loading-spinner';
+import { Search, Download, Plus, RefreshCw } from 'lucide-react';
+import { TableLoading } from '@/components/ui/basic/loading-spinner';
+import { EmptyState } from '@/components/ui/basic/error-boundary';
 
 export interface Column<T> {
   key: string;
   title: string;
-  render?: (value: any, record: T, index: number) => React.ReactNode;
+  render?: (value: unknown, record: T, index: number) => React.ReactNode;
   width?: string;
   align?: 'left' | 'center' | 'right';
   sortable?: boolean;
@@ -54,7 +55,7 @@ export interface DataTableProps<T> {
   className?: string;
 }
 
-export function DataTable<T extends Record<string, any>>({
+export function DataTable<T extends Record<string, unknown>>({
   title,
   data,
   columns,
@@ -202,7 +203,13 @@ export function DataTable<T extends Record<string, any>>({
                 </TableRow>
               ) : (
                 data.map((record, index) => (
-                  <TableRow key={record.id || record._id || index}>
+                  <TableRow
+                    key={
+                      (record as { id?: string; _id?: string }).id ||
+                      (record as { id?: string; _id?: string })._id ||
+                      index
+                    }
+                  >
                     {columns.map((column) => (
                       <TableCell 
                         key={column.key}
@@ -210,7 +217,7 @@ export function DataTable<T extends Record<string, any>>({
                       >
                         {column.render 
                           ? column.render(record[column.key], record, index)
-                          : record[column.key]
+                          : (record[column.key] as React.ReactNode)
                         }
                       </TableCell>
                     ))}

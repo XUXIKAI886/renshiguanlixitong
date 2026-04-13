@@ -127,9 +127,14 @@ export function StatusDistributionChart({ data }: StatusDistributionProps) {
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ status, count, percent }) => 
-                `${status}: ${count} (${(percent * 100).toFixed(1)}%)`
-              }
+              label={(props) => {
+                const { status, count, percent } = props as {
+                  status?: string;
+                  count?: number;
+                  percent?: number;
+                };
+                return `${status || ''}: ${count || 0} (${((percent || 0) * 100).toFixed(1)}%)`;
+              }}
               outerRadius={80}
               fill="#8884d8"
               dataKey="count"

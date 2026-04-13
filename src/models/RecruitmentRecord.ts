@@ -162,7 +162,7 @@ const RecruitmentRecordSchema = new Schema<RecruitmentRecordDocument>(
     toJSON: {
       transform: function(doc, ret) {
         ret.id = ret._id;
-        delete ret._id;
+        delete (ret as { _id?: string })._id;
         return ret;
       }
     }

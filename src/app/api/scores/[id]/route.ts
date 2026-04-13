@@ -3,6 +3,7 @@ import { z } from 'zod';
 import connectDB from '@/lib/mongodb';
 import { ScoreRecord, Employee } from '@/models';
 import { SCORE_BEHAVIORS } from '@/constants';
+import { getZodIssueDetails } from '@/utils/api-errors';
 
 // 积分记录更新验证模式
 const updateScoreRecordSchema = z.object({
@@ -99,7 +100,7 @@ export async function PUT(
     }
 
     // 如果更新了行为类型，需要重新计算分值
-    let updateData = { ...validatedData };
+    const updateData: typeof validatedData & { scoreChange?: number } = { ...validatedData };
     if (validatedData.behaviorType) {
       const scoreChange = getBehaviorScore(validatedData.behaviorType);
       if (scoreChange === 0) {
@@ -135,10 +136,7 @@ export async function PUT(
         { 
           success: false, 
           error: '数据验证失败',
-          details: error.errors.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
+          details: getZodIssueDetails(error)
         },
         { status: 400 }
       );

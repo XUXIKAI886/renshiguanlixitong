@@ -11,6 +11,9 @@ export async function POST() {
     
     // 直接使用MongoDB原生操作
     const db = mongoose.connection.db;
+    if (!db) {
+      throw new Error('数据库连接不可用');
+    }
     const collection = db.collection('recruitmentrecords');
     
     // 查找所有记录
@@ -96,6 +99,9 @@ export async function GET() {
     await connectDB();
     
     const db = mongoose.connection.db;
+    if (!db) {
+      throw new Error('数据库连接不可用');
+    }
     const collection = db.collection('recruitmentrecords');
     
     const allRecords = await collection.find({}).toArray();

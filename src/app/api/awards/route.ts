@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import connectDB from '@/lib/mongodb';
-import { AnnualAward, Employee, ScoreRecord } from '@/models';
+import { AnnualAward, Employee } from '@/models';
+import { getZodIssueDetails, isMongoDuplicateKeyError } from '@/utils/api-errors';
 
 // 年度评优创建验证模式
 const createAwardSchema = z.object({
@@ -10,7 +11,7 @@ const createAwardSchema = z.object({
   finalScore: z.number().min(0, '最终得分不能为负数'),
   rank: z.number().int().min(1, '排名不能小于1'),
   awardLevel: z.enum(['special', 'first', 'second', 'excellent'], {
-    errorMap: () => ({ message: '奖项等级只能是特等奖、一等奖、二等奖或优秀员工' })
+    message: '奖项等级只能是特等奖、一等奖、二等奖或优秀员工'
   }),
   bonusAmount: z.number().int().min(0, '奖金金额不能为负数')
 });
@@ -30,13 +31,13 @@ export async function GET(request: NextRequest) {
     const sortOrder = searchParams.get('sortOrder') || 'asc';
 
     // 构建查询条件
-    const query: any = {};
+    const query: Record<string, string | number> = {};
     if (year) query.year = parseInt(year);
     if (awardLevel) query.awardLevel = awardLevel;
 
     // 计算分页
     const skip = (page - 1) * limit;
-    const sortOptions: any = {};
+    const sortOptions: Record<string, 1 | -1> = {};
     sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
     // 查询数据
@@ -162,16 +163,13 @@ export async function POST(request: NextRequest) {
         { 
           success: false, 
           error: '数据验证失败',
-          details: error.errors.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
+          details: getZodIssueDetails(error)
         },
         { status: 400 }
       );
     }
 
-    if (error.code === 11000) {
+    if (isMongoDuplicateKeyError(error)) {
       return NextResponse.json(
         { success: false, error: '该员工在该年度已有评优记录' },
         { status: 400 }

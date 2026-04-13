@@ -44,10 +44,11 @@ import { toast } from 'sonner';
 // 表单验证模式
 const generateFormSchema = z.object({
   year: z.string().min(1, '请选择年份'),
-  forceRegenerate: z.boolean().default(false)
+  forceRegenerate: z.boolean()
 });
 
-type GenerateFormData = z.infer<typeof generateFormSchema>;
+type GenerateFormValues = z.input<typeof generateFormSchema>;
+type GenerateFormData = z.output<typeof generateFormSchema>;
 
 interface AwardGenerateProps {
   open: boolean;
@@ -101,7 +102,7 @@ export default function AwardGenerate({ open, onOpenChange, onSuccess }: AwardGe
   const [generateResult, setGenerateResult] = useState<GenerateResult | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
-  const form = useForm<GenerateFormData>({
+  const form = useForm<GenerateFormValues, undefined, GenerateFormData>({
     resolver: zodResolver(generateFormSchema),
     defaultValues: {
       year: new Date().getFullYear().toString(),
@@ -176,7 +177,7 @@ export default function AwardGenerate({ open, onOpenChange, onSuccess }: AwardGe
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-4">
                 {/* 年份选择 */}
-                <FormField
+                <FormField<GenerateFormValues, 'year'>
                   control={form.control}
                   name="year"
                   render={({ field }) => (
@@ -205,7 +206,7 @@ export default function AwardGenerate({ open, onOpenChange, onSuccess }: AwardGe
                 />
 
                 {/* 强制重新生成 */}
-                <FormField
+                <FormField<GenerateFormValues, 'forceRegenerate'>
                   control={form.control}
                   name="forceRegenerate"
                   render={({ field }) => (

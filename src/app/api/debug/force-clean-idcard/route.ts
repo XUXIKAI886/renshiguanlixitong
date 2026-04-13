@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { RecruitmentRecord } from '@/models';
+import { getErrorMessage } from '@/utils/api-errors';
 
 // POST - 强制清理所有身份证号相关索引
 export async function POST() {
@@ -34,8 +35,9 @@ export async function POST() {
         deletionResults.push({ index: indexName, deleted: true });
         console.log(`✅ 成功删除索引: ${indexName}`);
       } catch (error) {
-        deletionResults.push({ index: indexName, deleted: false, error: error.message });
-        console.log(`❌ 删除索引 ${indexName} 失败:`, error.message);
+        const message = getErrorMessage(error);
+        deletionResults.push({ index: indexName, deleted: false, error: message });
+        console.log(`❌ 删除索引 ${indexName} 失败:`, message);
       }
     }
     
@@ -54,7 +56,7 @@ export async function POST() {
       );
       console.log('✅ 创建性能索引成功:', createResult);
     } catch (error) {
-      console.log('❌ 创建性能索引失败:', error.message);
+      console.log('❌ 创建性能索引失败:', getErrorMessage(error));
     }
     
     // 验证最终状态
@@ -118,7 +120,7 @@ export async function GET() {
         indexDetails: idCardIndexes.reduce((acc, name) => {
           acc[name] = allIndexes[name];
           return acc;
-        }, {})
+        }, {} as Record<string, unknown>)
       }
     });
     

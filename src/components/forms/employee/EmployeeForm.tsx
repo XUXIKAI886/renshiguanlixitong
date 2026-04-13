@@ -34,11 +34,12 @@ const formSchema = z.object({
   totalScore: z.coerce.number().int(),
 });
 
-type FormData = z.infer<typeof formSchema>;
+type EmployeeFormValues = z.input<typeof formSchema>;
+type EmployeeSubmitData = z.output<typeof formSchema>;
 
 interface EmployeeFormProps {
   initialData?: Partial<Employee>;
-  onSubmit: (data: FormData) => Promise<void>;
+  onSubmit: (data: EmployeeSubmitData) => Promise<void>;
   onCancel?: () => void;
   isLoading?: boolean;
   mode?: 'create' | 'edit';
@@ -51,7 +52,7 @@ export default function EmployeeForm({
   isLoading = false,
   mode = 'create'
 }: EmployeeFormProps) {
-  const form = useForm<FormData>({
+  const form = useForm<EmployeeFormValues, undefined, EmployeeSubmitData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       regularDate: initialData?.regularDate 
@@ -69,7 +70,7 @@ export default function EmployeeForm({
     },
   });
 
-  const handleSubmit = async (data: FormData) => {
+  const handleSubmit = async (data: EmployeeSubmitData) => {
     try {
       await onSubmit(data);
     } catch (error) {
@@ -89,7 +90,7 @@ export default function EmployeeForm({
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             {/* 基础信息 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
+              <FormField<EmployeeFormValues, 'regularDate'>
                 control={form.control}
                 name="regularDate"
                 render={({ field }) => (
@@ -103,7 +104,7 @@ export default function EmployeeForm({
                 )}
               />
 
-              <FormField
+              <FormField<EmployeeFormValues, 'name'>
                 control={form.control}
                 name="name"
                 render={({ field }) => (
@@ -117,7 +118,7 @@ export default function EmployeeForm({
                 )}
               />
 
-              <FormField
+              <FormField<EmployeeFormValues, 'city'>
                 control={form.control}
                 name="city"
                 render={({ field }) => (
@@ -142,7 +143,7 @@ export default function EmployeeForm({
                 )}
               />
 
-              <FormField
+              <FormField<EmployeeFormValues, 'gender'>
                 control={form.control}
                 name="gender"
                 render={({ field }) => (
@@ -167,7 +168,7 @@ export default function EmployeeForm({
                 )}
               />
 
-              <FormField
+              <FormField<EmployeeFormValues, 'phone'>
                 control={form.control}
                 name="phone"
                 render={({ field }) => (
@@ -181,7 +182,7 @@ export default function EmployeeForm({
                 )}
               />
 
-              <FormField
+              <FormField<EmployeeFormValues, 'idCard'>
                 control={form.control}
                 name="idCard"
                 render={({ field }) => (
@@ -195,7 +196,7 @@ export default function EmployeeForm({
                 )}
               />
 
-              <FormField
+              <FormField<EmployeeFormValues, 'workStatus'>
                 control={form.control}
                 name="workStatus"
                 render={({ field }) => (
@@ -223,7 +224,7 @@ export default function EmployeeForm({
 
             {/* 工作信息 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
+              <FormField<EmployeeFormValues, 'department'>
                 control={form.control}
                 name="department"
                 render={({ field }) => (
@@ -249,7 +250,7 @@ export default function EmployeeForm({
                 )}
               />
 
-              <FormField
+              <FormField<EmployeeFormValues, 'position'>
                 control={form.control}
                 name="position"
                 render={({ field }) => (
@@ -275,7 +276,7 @@ export default function EmployeeForm({
                 )}
               />
 
-              <FormField
+              <FormField<EmployeeFormValues, 'totalScore'>
                 control={form.control}
                 name="totalScore"
                 render={({ field }) => (
@@ -286,6 +287,8 @@ export default function EmployeeForm({
                         type="number" 
                         placeholder="0" 
                         {...field}
+                        value={typeof field.value === 'number' || typeof field.value === 'string' ? field.value : ''}
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     </FormControl>
                     <FormMessage />

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import connectDB from '@/lib/mongodb';
 import { AnnualAward, Employee, ScoreRecord } from '@/models';
+import { getZodIssueDetails } from '@/utils/api-errors';
 
 // 年度评优生成验证模式
 const generateAwardSchema = z.object({
@@ -33,8 +34,8 @@ export async function POST(request: NextRequest) {
     // 获取该年度所有在职员工
     const employees = await Employee.find({ 
       workStatus: 'active',
-      hireDate: { $lte: new Date(`${year}-12-31`) }
-    }).select('employeeId name department position totalScore hireDate');
+      regularDate: { $lte: new Date(`${year}-12-31`) }
+    }).select('employeeId name department position totalScore regularDate');
 
     if (employees.length === 0) {
       return NextResponse.json(
@@ -154,10 +155,7 @@ export async function POST(request: NextRequest) {
         { 
           success: false, 
           error: '数据验证失败',
-          details: error.errors.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
+          details: getZodIssueDetails(error)
         },
         { status: 400 }
       );

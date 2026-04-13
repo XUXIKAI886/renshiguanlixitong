@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import connectDB from '@/lib/mongodb';
 import { Employee } from '@/models';
 import { resolveEmployeeWorkingDays } from '@/utils/employee-status';
+import { getZodIssueDetails, isMongoDuplicateKeyError } from '@/utils/api-errors';
 
 // 员工更新验证模式
 const updateEmployeeSchema = z.object({
@@ -172,14 +173,14 @@ export async function PUT(
         { 
           success: false, 
           error: '数据验证失败',
-          details: error.errors 
+          details: getZodIssueDetails(error)
         },
         { status: 400 }
       );
     }
 
-    if (error.code === 11000) {
-      const field = Object.keys(error.keyPattern)[0];
+    if (isMongoDuplicateKeyError(error)) {
+      const field = Object.keys(error.keyPattern || {})[0];
       const message = field === 'idCard' ? '身份证号已存在' : '数据重复';
       return NextResponse.json(
         { success: false, error: message },

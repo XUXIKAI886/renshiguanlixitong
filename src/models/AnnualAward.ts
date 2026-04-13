@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Model } from 'mongoose';
 import { AnnualAward as IAnnualAward } from '@/types';
 
 // 扩展Document接口
@@ -7,8 +7,25 @@ export interface AnnualAwardDocument extends IAnnualAward, Document {
   createdAt: Date;
 }
 
+interface AnnualAwardModel extends Model<AnnualAwardDocument> {
+  getAwardList(year: number): Promise<AnnualAwardDocument[]>;
+  getEmployeeAwardHistory(employeeId: string): Promise<AnnualAwardDocument[]>;
+  getYearlyStatistics(year: number): Promise<{
+    awardStats: unknown[];
+    departmentStats: unknown[];
+  }>;
+  generateAnnualAwards(
+    year: number,
+    evaluationData: Array<{
+      employeeId: string;
+      finalScore: number;
+    }>
+  ): Promise<AnnualAwardDocument[]>;
+  isYearGenerated(year: number): Promise<boolean>;
+}
+
 // 定义Schema
-const AnnualAwardSchema = new Schema<AnnualAwardDocument>(
+const AnnualAwardSchema = new Schema<AnnualAwardDocument, AnnualAwardModel>(
   {
     year: {
       type: Number,
@@ -75,7 +92,7 @@ const AnnualAwardSchema = new Schema<AnnualAwardDocument>(
     toJSON: {
       transform: function(doc, ret) {
         ret.id = ret._id;
-        delete ret._id;
+        delete (ret as { _id?: string })._id;
         return ret;
       }
     }
@@ -221,7 +238,7 @@ AnnualAwardSchema.statics.isYearGenerated = async function(year: number) {
 };
 
 // 防止重复编译
-const AnnualAward = mongoose.models.AnnualAward || 
-  mongoose.model<AnnualAwardDocument>('AnnualAward', AnnualAwardSchema);
+const AnnualAward = (mongoose.models.AnnualAward as unknown as AnnualAwardModel | undefined) || 
+  mongoose.model<AnnualAwardDocument, AnnualAwardModel>('AnnualAward', AnnualAwardSchema);
 
 export default AnnualAward;

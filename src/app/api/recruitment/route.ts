@@ -9,6 +9,7 @@ import {
   requiresArrivalDate,
 } from '@/utils/recruitment';
 import { syncEmployeeFromRecruitment } from '@/utils/recruitment-to-employee';
+import { getZodIssueDetails, isMongoDuplicateKeyError } from '@/utils/api-errors';
 
 // 招聘记录验证模式
 const recruitmentRecordSchema = z.object({
@@ -116,9 +117,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = recruitmentRecordSchema.parse(body);
 
-    if (validatedData.idCard === '' || !validatedData.idCard) {
-      validatedData.idCard = null;
-    }
+    const normalizedIdCard = validatedData.idCard?.trim()
+      ? validatedData.idCard
+      : undefined;
 
     if (requiresArrivalDate(validatedData.recruitmentStatus) && !validatedData.arrivalDate) {
       return NextResponse.json(
@@ -127,9 +128,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (validatedData.idCard) {
+    if (normalizedIdCard) {
       const existingIdCardRecord = await RecruitmentRecord.findOne({
-        idCard: validatedData.idCard
+        idCard: normalizedIdCard
       });
 
       if (existingIdCardRecord) {
@@ -166,7 +167,7 @@ export async function POST(request: NextRequest) {
         city: validatedData.city,
         gender: validatedData.gender,
         phone: validatedData.phone,
-        idCard: validatedData.idCard,
+        idCard: normalizedIdCard,
         arrivalDate: validatedData.arrivalDate,
         appliedPosition: validatedData.appliedPosition,
         department: validatedData.department
@@ -175,6 +176,7 @@ export async function POST(request: NextRequest) {
 
     const newRecord = new RecruitmentRecord({
       ...validatedData,
+      idCard: normalizedIdCard,
       regularizedDate,
       trialDays
     });
@@ -193,14 +195,14 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: '数据验证失败',
-          details: error.errors
+          details: getZodIssueDetails(error)
         },
         { status: 400 }
       );
     }
 
-    if (typeof error === 'object' && error && 'code' in error && error.code === 11000) {
-      const mongoError = error as { keyPattern?: Record<string, number> };
+    if (isMongoDuplicateKeyError(error)) {
+      const mongoError = error;
       if (mongoError.keyPattern?.idCard) {
         return NextResponse.json(
           { success: false, error: '身份证号已存在' },

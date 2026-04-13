@@ -3,6 +3,7 @@ import { z } from 'zod';
 import connectDB from '@/lib/mongodb';
 import { ScoreRecord, Employee } from '@/models';
 import { SCORE_BEHAVIORS } from '@/constants';
+import { getZodIssueDetails } from '@/utils/api-errors';
 
 // 积分记录验证模式
 const scoreRecordSchema = z.object({
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
     // 构建查询条件
-    const query: any = {};
+    const query: Record<string, unknown> = {};
     
     if (employeeId) {
       query.employeeId = employeeId;
@@ -69,14 +70,15 @@ export async function GET(request: NextRequest) {
     }
     
     if (startDate || endDate) {
-      query.recordDate = {};
-      if (startDate) query.recordDate.$gte = new Date(startDate);
-      if (endDate) query.recordDate.$lte = new Date(endDate);
+      const recordDateQuery: Record<string, Date> = {};
+      if (startDate) recordDateQuery.$gte = new Date(startDate);
+      if (endDate) recordDateQuery.$lte = new Date(endDate);
+      query.recordDate = recordDateQuery;
     }
 
     // 计算分页
     const skip = (page - 1) * limit;
-    const sortOptions: any = {};
+    const sortOptions: Record<string, 1 | -1> = {};
     sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
     // 查询数据
@@ -204,10 +206,7 @@ export async function POST(request: NextRequest) {
         { 
           success: false, 
           error: '数据验证失败',
-          details: error.errors.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
+          details: getZodIssueDetails(error)
         },
         { status: 400 }
       );

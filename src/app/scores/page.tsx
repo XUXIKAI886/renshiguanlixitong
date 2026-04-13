@@ -95,7 +95,7 @@ export default function ScoresPage() {
   };
 
   // 处理表单提交
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: Record<string, unknown>) => {
     try {
       const url = editingRecord ? `/api/scores/${editingRecord._id}` : '/api/scores';
       const method = editingRecord ? 'PUT' : 'POST';
@@ -305,7 +305,12 @@ export default function ScoresPage() {
             </DialogTitle>
           </DialogHeader>
           <ScoreForm
-            initialData={editingRecord}
+            initialData={editingRecord ? {
+              ...editingRecord,
+              employeeId: editingRecord.employeeId.employeeId,
+              recordDate: new Date(editingRecord.recordDate),
+              createdAt: new Date(editingRecord.createdAt)
+            } : undefined}
             onSubmit={handleFormSubmit}
             onCancel={() => {
               setIsFormOpen(false);

@@ -169,7 +169,7 @@ export default function AwardList({ refreshTrigger }: AwardListProps) {
   // 导出功能
   const handleExport = () => {
     try {
-      const formattedData = formatAwardDataForExport(filteredAwards);
+      const formattedData = formatAwardDataForExport(awards);
       const success = exportToExcel(
         formattedData,
         `年度评优记录_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '-')}`,

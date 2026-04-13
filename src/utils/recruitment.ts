@@ -85,22 +85,25 @@ export const getArrivalDate = (record: {
   return record.arrivalDate || record.trialDate || undefined;
 };
 
-// 输出给前端前统一格式，兼容旧状态和旧字段
-export const normalizeRecruitmentRecord = <T extends {
+type RecruitmentNormalizationFields = {
   recruitmentStatus?: string;
   arrivalDate?: Date | string | null;
   trialDate?: Date | string | null;
   regularizedDate?: Date | string | null;
   updatedAt?: Date | string | null;
   trialDays?: number;
-}>(record: T) => {
-  const recruitmentStatus = normalizeRecruitmentStatus(record.recruitmentStatus);
-  const arrivalDate = getArrivalDate(record);
+};
+
+// 输出给前端前统一格式，兼容旧状态和旧字段
+export const normalizeRecruitmentRecord = <T extends Record<string, unknown>>(record: T) => {
+  const normalizedRecord = record as T & RecruitmentNormalizationFields;
+  const recruitmentStatus = normalizeRecruitmentStatus(normalizedRecord.recruitmentStatus);
+  const arrivalDate = getArrivalDate(normalizedRecord);
   const trialDays = calculateTrialDays(
     arrivalDate,
     recruitmentStatus,
-    record.regularizedDate,
-    record.updatedAt
+    normalizedRecord.regularizedDate,
+    normalizedRecord.updatedAt
   );
 
   return {

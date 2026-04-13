@@ -35,7 +35,7 @@ const formSchema = z.object({
     return /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/.test(val);
   }, '请输入有效的身份证号'),
   phone: z.string().regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
-  appliedPosition: z.string().default('未分配'),
+  appliedPosition: z.string().min(1, '请选择应聘岗位'),
   department: z.enum(['销售部', '运营部', '人事部', '未分配'], { message: '请选择部门' }),
   arrivalDate: z.string().optional(),
   resignationReason: z.string().max(500, '备注内容最多500字').optional(),
@@ -50,11 +50,14 @@ const formSchema = z.object({
   }
 });
 
-type FormData = z.infer<typeof formSchema>;
+type RecruitmentFormValues = z.input<typeof formSchema>;
+type RecruitmentSubmitData = Omit<RecruitmentFormValues, 'age'> & {
+  age: number;
+};
 
 interface RecruitmentFormProps {
   initialData?: Partial<RecruitmentRecord>;
-  onSubmit: (data: FormData) => Promise<void>;
+  onSubmit: (data: RecruitmentSubmitData) => Promise<void>;
   onCancel?: () => void;
   isLoading?: boolean;
   mode?: 'create' | 'edit';
@@ -67,7 +70,7 @@ export default function RecruitmentForm({
   isLoading = false,
   mode = 'create'
 }: RecruitmentFormProps) {
-  const form = useForm<FormData>({
+  const form = useForm<RecruitmentFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       interviewDate: initialData?.interviewDate
@@ -80,7 +83,7 @@ export default function RecruitmentForm({
       idCard: initialData?.idCard || '',
       phone: initialData?.phone || '',
       appliedPosition: initialData?.appliedPosition || '未分配',
-      department: initialData?.department || '未分配',
+      department: (initialData?.department as RecruitmentFormValues['department']) || '未分配',
       arrivalDate: getArrivalDate(initialData || {})
         ? format(new Date(getArrivalDate(initialData || {})!), 'yyyy-MM-dd')
         : '',
@@ -99,7 +102,7 @@ export default function RecruitmentForm({
       )
     : undefined;
 
-  const handleSubmit = async (data: FormData) => {
+  const handleSubmit = async (data: RecruitmentFormValues) => {
     try {
       const submissionData = {
         ...data,
@@ -122,7 +125,7 @@ export default function RecruitmentForm({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
+              <FormField<RecruitmentFormValues, 'interviewDate'>
                 control={form.control}
                 name="interviewDate"
                 render={({ field }) => (
@@ -136,7 +139,7 @@ export default function RecruitmentForm({
                 )}
               />
 
-              <FormField
+              <FormField<RecruitmentFormValues, 'candidateName'>
                 control={form.control}
                 name="candidateName"
                 render={({ field }) => (
@@ -150,7 +153,7 @@ export default function RecruitmentForm({
                 )}
               />
 
-              <FormField
+              <FormField<RecruitmentFormValues, 'gender'>
                 control={form.control}
                 name="gender"
                 render={({ field }) => (
@@ -175,7 +178,7 @@ export default function RecruitmentForm({
                 )}
               />
 
-              <FormField
+              <FormField<RecruitmentFormValues, 'city'>
                 control={form.control}
                 name="city"
                 render={({ field }) => (
@@ -200,7 +203,7 @@ export default function RecruitmentForm({
                 )}
               />
 
-              <FormField
+              <FormField<RecruitmentFormValues, 'age'>
                 control={form.control}
                 name="age"
                 render={({ field }) => (
@@ -221,7 +224,7 @@ export default function RecruitmentForm({
                 )}
               />
 
-              <FormField
+              <FormField<RecruitmentFormValues, 'idCard'>
                 control={form.control}
                 name="idCard"
                 render={({ field }) => (
@@ -235,7 +238,7 @@ export default function RecruitmentForm({
                 )}
               />
 
-              <FormField
+              <FormField<RecruitmentFormValues, 'phone'>
                 control={form.control}
                 name="phone"
                 render={({ field }) => (
@@ -249,7 +252,7 @@ export default function RecruitmentForm({
                 )}
               />
 
-              <FormField
+              <FormField<RecruitmentFormValues, 'appliedPosition'>
                 control={form.control}
                 name="appliedPosition"
                 render={({ field }) => (
@@ -275,7 +278,7 @@ export default function RecruitmentForm({
                 )}
               />
 
-              <FormField
+              <FormField<RecruitmentFormValues, 'department'>
                 control={form.control}
                 name="department"
                 render={({ field }) => (
@@ -301,7 +304,7 @@ export default function RecruitmentForm({
                 )}
               />
 
-              <FormField
+              <FormField<RecruitmentFormValues, 'recruitmentStatus'>
                 control={form.control}
                 name="recruitmentStatus"
                 render={({ field }) => (
@@ -329,7 +332,7 @@ export default function RecruitmentForm({
 
             {requiresArrivalDate(watchRecruitmentStatus) && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg bg-muted/50">
-                <FormField
+                <FormField<RecruitmentFormValues, 'arrivalDate'>
                   control={form.control}
                   name="arrivalDate"
                   render={({ field }) => (
@@ -355,7 +358,7 @@ export default function RecruitmentForm({
               </div>
             )}
 
-            <FormField
+            <FormField<RecruitmentFormValues, 'resignationReason'>
               control={form.control}
               name="resignationReason"
               render={({ field }) => (

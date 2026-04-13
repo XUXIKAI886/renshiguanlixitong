@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import connectDB from '@/lib/mongodb';
 import { Employee } from '@/models';
+import { getZodIssueDetails, isMongoDuplicateKeyError } from '@/utils/api-errors';
 
 // 员工创建验证模式
 const createEmployeeSchema = z.object({
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
     const workStatus = searchParams.get('workStatus') || '';
 
     // 构建查询条件
-    const query: any = {};
+    const query: Record<string, unknown> = {};
 
     // 关键词搜索（姓名、员工ID、手机号）
     if (keyword) {
@@ -166,14 +167,14 @@ export async function POST(request: NextRequest) {
         { 
           success: false, 
           error: '数据验证失败',
-          details: error.errors 
+          details: getZodIssueDetails(error)
         },
         { status: 400 }
       );
     }
 
-    if (error.code === 11000) {
-      const field = Object.keys(error.keyPattern)[0];
+    if (isMongoDuplicateKeyError(error)) {
+      const field = Object.keys(error.keyPattern || {})[0];
       const message = field === 'employeeId' ? '员工ID已存在' :
                      field === 'idCard' ? '身份证号已存在' : '数据重复';
       return NextResponse.json(

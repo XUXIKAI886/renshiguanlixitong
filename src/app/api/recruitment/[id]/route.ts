@@ -11,6 +11,7 @@ import {
   requiresArrivalDate,
 } from '@/utils/recruitment';
 import { syncEmployeeFromRecruitment } from '@/utils/recruitment-to-employee';
+import { getZodIssueDetails, isMongoDuplicateKeyError } from '@/utils/api-errors';
 
 // 招聘记录更新验证模式
 const updateRecruitmentRecordSchema = z.object({
@@ -114,13 +115,13 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updateRecruitmentRecordSchema.parse(body);
 
-    if (validatedData.idCard === '' || !validatedData.idCard) {
-      validatedData.idCard = null;
-    }
+    const normalizedIdCard = validatedData.idCard?.trim()
+      ? validatedData.idCard
+      : undefined;
 
-    if (validatedData.idCard && validatedData.idCard !== existingRecord.idCard) {
+    if (normalizedIdCard && normalizedIdCard !== existingRecord.idCard) {
       const duplicateRecord = await RecruitmentRecord.findOne({
-        idCard: validatedData.idCard,
+        idCard: normalizedIdCard,
         _id: { $ne: id }
       });
 
@@ -160,6 +161,7 @@ export async function PUT(
 
     const updateData = {
       ...validatedData,
+      idCard: normalizedIdCard,
       recruitmentStatus: nextStatus,
       arrivalDate: nextArrivalDate,
       regularizedDate: nextStatus === 'regularized'
@@ -180,7 +182,7 @@ export async function PUT(
         city: validatedData.city || existingRecord.city || '宜昌',
         gender: validatedData.gender || existingRecord.gender,
         phone: validatedData.phone || existingRecord.phone,
-        idCard: validatedData.idCard ?? existingRecord.idCard,
+        idCard: normalizedIdCard ?? existingRecord.idCard,
         arrivalDate: nextArrivalDate,
         appliedPosition: validatedData.appliedPosition || existingRecord.appliedPosition,
         department: validatedData.department || existingRecord.department
@@ -206,13 +208,13 @@ export async function PUT(
         {
           success: false,
           error: '数据验证失败',
-          details: error.errors
+          details: getZodIssueDetails(error)
         },
         { status: 400 }
       );
     }
 
-    if (typeof error === 'object' && error && 'code' in error && error.code === 11000) {
+    if (isMongoDuplicateKeyError(error)) {
       return NextResponse.json(
         { success: false, error: '身份证号或手机号已存在' },
         { status: 400 }
