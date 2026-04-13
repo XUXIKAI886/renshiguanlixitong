@@ -3,6 +3,7 @@ import { z } from 'zod';
 import mongoose from 'mongoose';
 import connectDB from '@/lib/mongodb';
 import { Employee } from '@/models';
+import { resolveEmployeeWorkingDays } from '@/utils/employee-status';
 
 // 员工更新验证模式
 const updateEmployeeSchema = z.object({
@@ -134,11 +135,21 @@ export async function PUT(
       }
     }
 
-    // 处理日期字段
-    const updateData = { ...validatedData };
-    if (updateData.regularDate) {
-      updateData.regularDate = new Date(updateData.regularDate);
-    }
+    const nextWorkStatus = validatedData.workStatus || existingEmployee.workStatus;
+    const nextRegularDate = validatedData.regularDate
+      ? new Date(validatedData.regularDate)
+      : existingEmployee.regularDate;
+
+    const updateData = {
+      ...validatedData,
+      ...(validatedData.regularDate ? { regularDate: nextRegularDate } : {}),
+      workingDays: resolveEmployeeWorkingDays({
+        regularDate: nextRegularDate,
+        existingWorkingDays: existingEmployee.workingDays,
+        currentWorkStatus: existingEmployee.workStatus,
+        nextWorkStatus,
+      }),
+    };
 
     // 更新员工信息
     const updatedEmployee = await Employee.findByIdAndUpdate(
@@ -234,9 +245,19 @@ export async function DELETE(
     }
 
     // 软删除：设置为离职状态（普通员工）
+    const workingDays = resolveEmployeeWorkingDays({
+      regularDate: employee.regularDate,
+      existingWorkingDays: employee.workingDays,
+      currentWorkStatus: employee.workStatus,
+      nextWorkStatus: 'resigned',
+    });
+
     const updatedEmployee = await Employee.findByIdAndUpdate(
       id,
-      { workStatus: 'resigned' },
+      {
+        workStatus: 'resigned',
+        workingDays,
+      },
       { new: true, runValidators: true }
     );
 

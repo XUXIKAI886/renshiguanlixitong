@@ -7,9 +7,11 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // 计算在职天数
-export const calculateWorkingDays = (regularDate: Date): number => {
-  const today = new Date();
-  const diffTime = today.getTime() - regularDate.getTime();
+export const calculateWorkingDays = (
+  regularDate: Date,
+  referenceDate: Date = new Date()
+): number => {
+  const diffTime = referenceDate.getTime() - regularDate.getTime();
   return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 };
 
