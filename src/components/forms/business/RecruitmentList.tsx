@@ -24,7 +24,11 @@ import {
   Clock
 } from 'lucide-react';
 import { RecruitmentRecord } from '@/types';
-import { GENDER_LABELS, RECRUITMENT_STATUS_LABELS } from '@/constants';
+import {
+  GENDER_LABELS,
+  RECRUITMENT_STATUS_BADGE_CLASS_NAMES,
+  RECRUITMENT_STATUS_LABELS,
+} from '@/constants';
 import { formatDate } from '@/utils';
 import { exportToExcel, formatRecruitmentDataForExport } from '@/utils/export';
 import { calculateTrialDays, requiresArrivalDate } from '@/utils/recruitment';
@@ -48,14 +52,29 @@ interface RecruitmentListProps {
   isLoading?: boolean;
 }
 
-// 状态颜色映射
-const statusColors = {
-  pending_arrival: 'bg-blue-100 text-blue-800',
-  no_show: 'bg-gray-100 text-gray-800',
-  trialing: 'bg-yellow-100 text-yellow-800',
-  regularized: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
-};
+interface OverviewStat {
+  value: number;
+  label: string;
+  unit?: string;
+}
+
+interface OverviewStats {
+  totalRecruitment: OverviewStat;
+  pendingDecisionCount: OverviewStat;
+  pendingArrivalCount: OverviewStat;
+  noShowCount: OverviewStat;
+  trialingCount: OverviewStat;
+  regularizedCount: OverviewStat;
+  rejectedCount: OverviewStat;
+}
+
+interface StatConfig {
+  key: keyof OverviewStats;
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+  bgColor: string;
+}
 
 export default function RecruitmentList({
   records,
@@ -73,7 +92,7 @@ export default function RecruitmentList({
 }: RecruitmentListProps) {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [overviewStats, setOverviewStats] = useState<any>(null);
+  const [overviewStats, setOverviewStats] = useState<OverviewStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [detailRecord, setDetailRecord] = useState<RecruitmentRecord | null>(null);
   const [detailStatus, setDetailStatus] = useState<RecruitmentRecord['recruitmentStatus']>('pending_arrival');
@@ -208,13 +227,20 @@ export default function RecruitmentList({
     }
   };
 
-  const statsConfig = [
+  const statsConfig: StatConfig[] = [
     {
       key: 'totalRecruitment',
       title: '招聘总人数',
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100'
+    },
+    {
+      key: 'pendingDecisionCount',
+      title: '待定人数',
+      icon: MoreHorizontal,
+      color: 'text-slate-600',
+      bgColor: 'bg-slate-100'
     },
     {
       key: 'pendingArrivalCount',
@@ -263,7 +289,7 @@ export default function RecruitmentList({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-3">
         {statsConfig.map((statConfig) => {
           const Icon = statConfig.icon;
           const statData = overviewStats?.[statConfig.key];
@@ -411,7 +437,7 @@ export default function RecruitmentList({
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={statusColors[record.recruitmentStatus as keyof typeof statusColors]}>
+                        <Badge className={RECRUITMENT_STATUS_BADGE_CLASS_NAMES[record.recruitmentStatus]}>
                           {RECRUITMENT_STATUS_LABELS[record.recruitmentStatus]}
                         </Badge>
                       </TableCell>

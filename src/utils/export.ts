@@ -1,8 +1,91 @@
 import * as XLSX from 'xlsx';
+import { RECRUITMENT_STATUS_LABELS } from '@/constants';
 import { calculateWorkingDays } from '@/utils';
+import type { AnnualAward, Employee, RecruitmentRecord } from '@/types';
+
+type ExportDate = Date | string | undefined;
+
+type ExportableEmployee = {
+  employeeId?: string;
+  name?: string;
+  city?: Employee['city'];
+  gender?: Employee['gender'];
+  phone?: string;
+  idCard?: string;
+  department?: string;
+  position?: string;
+  workStatus?: Employee['workStatus'];
+  workingDays?: number;
+  totalScore?: number;
+  regularDate?: Date | string;
+};
+
+type ExportableRecruitmentRecord = {
+  candidateName?: string;
+  city?: RecruitmentRecord['city'];
+  gender?: RecruitmentRecord['gender'];
+  idCard?: string;
+  phone?: string;
+  appliedPosition?: string;
+  department?: string;
+  interviewDate?: Date | string;
+  arrivalDate?: Date | string;
+  trialDays?: number;
+  resignationReason?: string;
+  recruitmentStatus?: RecruitmentRecord['recruitmentStatus'] | string;
+  createdAt?: Date | string;
+};
+
+type ExportableEmployeeRef = {
+  employeeId?: string;
+  name?: string;
+  department?: string;
+  position?: string;
+};
+
+type ExportableScoreRecord = {
+  employeeId?: string | ExportableEmployeeRef;
+  employeeName?: string;
+  department?: string;
+  position?: string;
+  behaviorType?: string;
+  scoreChange?: number;
+  reason?: string;
+  recordedBy?: string;
+  recordDate?: ExportDate;
+  createdAt?: ExportDate;
+};
+
+type ExportableAward = {
+  rank?: number;
+  year?: number;
+  awardLevel?: AnnualAward['awardLevel'] | string;
+  finalScore?: number;
+  bonusAmount?: number;
+  createdAt?: ExportDate;
+  employeeId?: string | ExportableEmployeeRef;
+  employeeName?: string;
+  department?: string;
+  position?: string;
+};
+
+const formatExportDate = (value: ExportDate) =>
+  value ? new Date(value).toLocaleDateString('zh-CN') : '-';
+
+const getEmployeeRef = (value?: string | ExportableEmployeeRef): ExportableEmployeeRef => {
+  if (!value || typeof value === 'string') {
+    return { employeeId: value };
+  }
+
+  return value;
+};
 
 // 导出数据到Excel
-export function exportToExcel(data: any[], filename: string, sheetName: string = 'Sheet1') {
+export function exportToExcel(
+  data: Array<Record<string, unknown>>,
+  filename: string,
+  sheetName: string = 'Sheet1'
+) {
   try {
     // 创建工作簿
     const workbook = XLSX.utils.book_new();
@@ -28,7 +111,7 @@ export function exportToExcel(data: any[], filename: string, sheetName: string =
 }
 
 // 格式化员工数据用于导出
-export function formatEmployeeDataForExport(employees: any[]) {
+export function formatEmployeeDataForExport(employees: ExportableEmployee[]) {
   return employees.map(employee => ({
     '员工ID': employee.employeeId,
     '姓名': employee.name,
@@ -40,18 +123,22 @@ export function formatEmployeeDataForExport(employees: any[]) {
     '岗位': employee.position,
     '在职状况': employee.workStatus === 'active' ? '在职' : 
                 employee.workStatus === 'resigned' ? '离职' : '休假',
-    '在职天数': employee.workStatus === 'active' 
+    '在职天数': employee.workStatus === 'active' && employee.regularDate
       ? calculateWorkingDays(new Date(employee.regularDate))
       : employee.workingDays,
     '总积分': employee.totalScore,
-    '入司日期': new Date(employee.regularDate).toLocaleDateString('zh-CN'),
+    '入司日期': formatExportDate(employee.regularDate),
     '今日日期': new Date().toLocaleDateString('zh-CN')
   }));
 }
 
 // 格式化招聘数据用于导出
-export function formatRecruitmentDataForExport(records: any[]) {
-  return records.map(record => ({
+export function formatRecruitmentDataForExport(records: ExportableRecruitmentRecord[]) {
+  return records.map(record => {
+    const recruitmentStatusKey =
+      record.recruitmentStatus as keyof typeof RECRUITMENT_STATUS_LABELS;
+
+    return {
     '姓名': record.candidateName,
     '城市': record.city || '宜昌',
     '性别': record.gender === 'male' ? '男' : '女',
@@ -59,26 +146,26 @@ export function formatRecruitmentDataForExport(records: any[]) {
     '电话': record.phone,
     '应聘岗位': record.appliedPosition || '未分配',
     '所属部门': record.department || '未分配',
-    '面试日期': new Date(record.interviewDate).toLocaleDateString('zh-CN'),
-    '到岗日期': record.arrivalDate ? new Date(record.arrivalDate).toLocaleDateString('zh-CN') : '-',
+    '面试日期': formatExportDate(record.interviewDate),
+    '到岗日期': formatExportDate(record.arrivalDate),
     '试岗天数': record.trialDays || '-',
     '备注内容': record.resignationReason || '-',
-    '招聘状态': record.recruitmentStatus === 'pending_arrival' ? '可试岗待到岗' :
-                record.recruitmentStatus === 'no_show' ? '未到岗' :
-                record.recruitmentStatus === 'trialing' ? '试岗中' :
-                record.recruitmentStatus === 'regularized' ? '已转正' :
-                record.recruitmentStatus === 'rejected' ? '已拒绝' : record.recruitmentStatus,
-    '创建时间': new Date(record.createdAt).toLocaleDateString('zh-CN')
-  }));
+    '招聘状态': RECRUITMENT_STATUS_LABELS[recruitmentStatusKey] || record.recruitmentStatus,
+    '创建时间': formatExportDate(record.createdAt)
+    };
+  });
 }
 
 // 格式化积分数据用于导出
-export function formatScoreDataForExport(scores: any[]) {
-  return scores.map(score => ({
-    '员工ID': score.employeeId?.employeeId || score.employeeId,
-    '员工姓名': score.employeeId?.name || score.employeeName,
-    '部门': score.employeeId?.department || score.department,
-    '岗位': score.employeeId?.position || score.position,
+export function formatScoreDataForExport(scores: ExportableScoreRecord[]) {
+  return scores.map(score => {
+    const employee = getEmployeeRef(score.employeeId);
+
+    return {
+    '员工ID': employee.employeeId || score.employeeId,
+    '员工姓名': employee.name || score.employeeName,
+    '部门': employee.department || score.department,
+    '岗位': employee.position || score.position,
     '行为类型': score.behaviorType === 'overtime_help' ? '周末加班帮忙' :
                 score.behaviorType === 'cleaning' ? '主动打扫卫生' :
                 score.behaviorType === 'moving_help' ? '协助搬运物品' :
@@ -98,19 +185,23 @@ export function formatScoreDataForExport(scores: any[]) {
     '积分变化': score.scoreChange,
     '记录原因': score.reason,
     '记录人': score.recordedBy,
-    '记录日期': new Date(score.recordDate).toLocaleDateString('zh-CN'),
-    '创建时间': new Date(score.createdAt).toLocaleDateString('zh-CN')
-  }));
+    '记录日期': formatExportDate(score.recordDate),
+    '创建时间': formatExportDate(score.createdAt)
+    };
+  });
 }
 
 // 格式化年度评优数据用于导出
-export function formatAwardDataForExport(awards: any[]) {
-  return awards.map(award => ({
+export function formatAwardDataForExport(awards: ExportableAward[]) {
+  return awards.map(award => {
+    const employee = getEmployeeRef(award.employeeId);
+
+    return {
     '排名': award.rank,
-    '员工ID': award.employeeId?.employeeId || award.employeeId,
-    '员工姓名': award.employeeId?.name || award.employeeName,
-    '部门': award.employeeId?.department || award.department,
-    '岗位': award.employeeId?.position || award.position,
+    '员工ID': employee.employeeId || award.employeeId,
+    '员工姓名': employee.name || award.employeeName,
+    '部门': employee.department || award.department,
+    '岗位': employee.position || award.position,
     '年份': award.year,
     '奖项等级': award.awardLevel === 'special' ? '特等奖' :
                 award.awardLevel === 'first' ? '一等奖' :
@@ -118,6 +209,7 @@ export function formatAwardDataForExport(awards: any[]) {
                 award.awardLevel === 'excellent' ? '优秀员工' : award.awardLevel,
     '最终得分': award.finalScore,
     '奖金金额': award.bonusAmount,
-    '创建时间': new Date(award.createdAt).toLocaleDateString('zh-CN')
-  }));
+    '创建时间': formatExportDate(award.createdAt)
+    };
+  });
 }

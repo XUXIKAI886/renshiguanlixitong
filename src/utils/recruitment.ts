@@ -1,29 +1,30 @@
-// 招聘状态类型
-export type RecruitmentStatus =
-  | 'pending_arrival'
-  | 'no_show'
-  | 'trialing'
-  | 'regularized'
-  | 'rejected';
+import {
+  ARRIVAL_DATE_OPTIONAL_RECRUITMENT_STATUSES,
+  RECRUITMENT_STATUS,
+} from '@/constants';
+import type { RecruitmentStatus } from '@/constants';
 
 // 兼容旧状态值，统一映射到新流程状态
 export const normalizeRecruitmentStatus = (status?: string): RecruitmentStatus => {
   switch (status) {
+    case 'pending':
+    case '待定':
+      return RECRUITMENT_STATUS.PENDING_DECISION;
     case 'interviewing':
-      return 'pending_arrival';
+      return RECRUITMENT_STATUS.PENDING_ARRIVAL;
     case 'trial':
-      return 'trialing';
+      return RECRUITMENT_STATUS.TRIALING;
     case 'hired':
-      return 'regularized';
-    case 'rejected':
-      return 'rejected';
-    case 'pending_arrival':
-    case 'no_show':
-    case 'trialing':
-    case 'regularized':
+      return RECRUITMENT_STATUS.REGULARIZED;
+    case RECRUITMENT_STATUS.PENDING_DECISION:
+    case RECRUITMENT_STATUS.PENDING_ARRIVAL:
+    case RECRUITMENT_STATUS.NO_SHOW:
+    case RECRUITMENT_STATUS.TRIALING:
+    case RECRUITMENT_STATUS.REGULARIZED:
+    case RECRUITMENT_STATUS.REJECTED:
       return status;
     default:
-      return 'pending_arrival';
+      return RECRUITMENT_STATUS.PENDING_ARRIVAL;
   }
 };
 
@@ -31,21 +32,25 @@ export const normalizeRecruitmentStatus = (status?: string): RecruitmentStatus =
 export const getCompatibleRecruitmentStatuses = (status?: string): string[] => {
   const normalizedStatus = normalizeRecruitmentStatus(status);
   switch (normalizedStatus) {
-    case 'pending_arrival':
-      return ['pending_arrival', 'interviewing'];
-    case 'trialing':
-      return ['trialing', 'trial'];
-    case 'regularized':
-      return ['regularized', 'hired'];
+    case RECRUITMENT_STATUS.PENDING_DECISION:
+      return [RECRUITMENT_STATUS.PENDING_DECISION, 'pending', '待定'];
+    case RECRUITMENT_STATUS.PENDING_ARRIVAL:
+      return [RECRUITMENT_STATUS.PENDING_ARRIVAL, 'interviewing'];
+    case RECRUITMENT_STATUS.TRIALING:
+      return [RECRUITMENT_STATUS.TRIALING, 'trial'];
+    case RECRUITMENT_STATUS.REGULARIZED:
+      return [RECRUITMENT_STATUS.REGULARIZED, 'hired'];
     default:
       return [normalizedStatus];
   }
 };
 
-// 除已拒绝外，其余流程状态都需要到岗日期
+// 待定、未到岗、已拒绝不要求到岗日期，其余流程状态需要到岗日期
 export const requiresArrivalDate = (status?: string): boolean => {
   const normalizedStatus = normalizeRecruitmentStatus(status);
-  return normalizedStatus !== 'rejected';
+  const optionalStatuses: readonly RecruitmentStatus[] =
+    ARRIVAL_DATE_OPTIONAL_RECRUITMENT_STATUSES;
+  return !optionalStatuses.includes(normalizedStatus);
 };
 
 // 根据到岗日期自动计算试岗天数
@@ -60,12 +65,15 @@ export const calculateTrialDays = (
   }
 
   const normalizedStatus = normalizeRecruitmentStatus(status);
-  if (normalizedStatus !== 'trialing' && normalizedStatus !== 'regularized') {
+  if (
+    normalizedStatus !== RECRUITMENT_STATUS.TRIALING &&
+    normalizedStatus !== RECRUITMENT_STATUS.REGULARIZED
+  ) {
     return undefined;
   }
 
   const start = new Date(arrivalDate);
-  const end = normalizedStatus === 'regularized'
+  const end = normalizedStatus === RECRUITMENT_STATUS.REGULARIZED
     ? new Date(regularizedDate || updatedAt || new Date())
     : new Date();
 

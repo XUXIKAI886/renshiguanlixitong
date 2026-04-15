@@ -1,3 +1,5 @@
+import type { RecruitmentStatus } from '@/constants';
+
 // 招聘记录类型定义
 export interface RecruitmentRecord {
   _id?: string;
@@ -18,7 +20,7 @@ export interface RecruitmentRecord {
   trialDays?: number;
   trialStatus?: 'excellent' | 'good' | 'average' | 'poor'; // 兼容旧数据
   resignationReason?: string;
-  recruitmentStatus: 'pending_arrival' | 'no_show' | 'trialing' | 'regularized' | 'rejected';
+  recruitmentStatus: RecruitmentStatus;
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { PageContainer } from '@/components/layout';
 import { 
@@ -12,11 +12,12 @@ import {
 } from '@/components/charts/RecruitmentCharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/form/select';
 import { Button } from '@/components/ui/basic/button';
-import { RefreshCw, Users, UserCheck, UserX, Clock } from 'lucide-react';
+import { RefreshCw, Users, UserCheck, Clock } from 'lucide-react';
 
 interface DashboardData {
   basicStats: {
     totalCandidates: number;
+    pendingDecisionCount: number;
     pendingArrivalCount: number;
     noShowCount: number;
     trialingCount: number;
@@ -28,6 +29,7 @@ interface DashboardData {
   monthlyTrend: Array<{
     month: string;
     total: number;
+    pendingDecision: number;
     pendingArrival: number;
     noShow: number;
     trialing: number;
@@ -59,7 +61,7 @@ export default function RecruitmentDashboard() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
 
   // 获取仪表盘数据
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/recruitment/stats?year=${selectedYear}`);
@@ -76,7 +78,7 @@ export default function RecruitmentDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedYear]);
 
   // 刷新数据
   const handleRefresh = () => {
@@ -91,7 +93,7 @@ export default function RecruitmentDashboard() {
   // 初始加载和年份变更时重新获取数据
   useEffect(() => {
     fetchDashboardData();
-  }, [selectedYear]);
+  }, [fetchDashboardData]);
 
   // 生成年份选项
   const currentYear = new Date().getFullYear();
@@ -203,6 +205,10 @@ export default function RecruitmentDashboard() {
               <div className="bg-blue-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-blue-900 mb-2">面试状态</h3>
                 <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>待定:</span>
+                    <span className="font-medium">{data.basicStats.pendingDecisionCount}人</span>
+                  </div>
                   <div className="flex justify-between">
                     <span>待到岗:</span>
                     <span className="font-medium">{data.basicStats.pendingArrivalCount}人</span>

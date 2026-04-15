@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import connectDB from '@/lib/mongodb';
 import { RecruitmentRecord } from '@/models';
+import { RECRUITMENT_STATUS_VALUES } from '@/constants';
 import {
   calculateTrialDays,
   getCompatibleRecruitmentStatuses,
@@ -32,13 +33,7 @@ const recruitmentRecordSchema = z.object({
   ]).default('未分配'),
   arrivalDate: z.string().transform((str) => str ? new Date(str) : undefined).optional(),
   resignationReason: z.string().max(500, '备注内容最多500字').optional(),
-  recruitmentStatus: z.enum([
-    'pending_arrival',
-    'no_show',
-    'trialing',
-    'regularized',
-    'rejected'
-  ]).default('pending_arrival'),
+  recruitmentStatus: z.enum(RECRUITMENT_STATUS_VALUES).default('pending_arrival'),
 });
 
 // GET - 获取招聘记录列表

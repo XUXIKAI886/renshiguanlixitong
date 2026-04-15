@@ -14,6 +14,7 @@ export async function GET() {
     const records = rawRecords.map((record) => normalizeRecruitmentRecord(record));
 
     const totalRecruitment = records.length;
+    const pendingDecisionCount = records.filter(record => record.recruitmentStatus === 'pending_decision').length;
     const pendingArrivalCount = records.filter(record => record.recruitmentStatus === 'pending_arrival').length;
     const noShowCount = records.filter(record => record.recruitmentStatus === 'no_show').length;
     const trialingCount = records.filter(record => record.recruitmentStatus === 'trialing').length;
@@ -24,6 +25,10 @@ export async function GET() {
       totalRecruitment: {
         value: totalRecruitment,
         label: '招聘总人数'
+      },
+      pendingDecisionCount: {
+        value: pendingDecisionCount,
+        label: '待定人数'
       },
       pendingArrivalCount: {
         value: pendingArrivalCount,

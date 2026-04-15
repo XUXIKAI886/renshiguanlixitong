@@ -3,6 +3,7 @@ import { z } from 'zod';
 import mongoose from 'mongoose';
 import connectDB from '@/lib/mongodb';
 import { RecruitmentRecord } from '@/models';
+import { RECRUITMENT_STATUS_VALUES } from '@/constants';
 import {
   calculateTrialDays,
   getArrivalDate,
@@ -40,13 +41,7 @@ const updateRecruitmentRecordSchema = z.object({
   ]).optional(),
   arrivalDate: z.string().transform((str) => str ? new Date(str) : undefined).optional(),
   resignationReason: z.string().max(500, '备注内容最多500字').optional(),
-  recruitmentStatus: z.enum([
-    'pending_arrival',
-    'no_show',
-    'trialing',
-    'regularized',
-    'rejected'
-  ]).optional(),
+  recruitmentStatus: z.enum(RECRUITMENT_STATUS_VALUES).optional(),
 });
 
 // GET - 获取单个招聘记录

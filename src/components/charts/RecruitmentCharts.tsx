@@ -2,7 +2,6 @@
 
 import React from 'react';
 import {
-  LineChart,
   Line,
   AreaChart,
   Area,
@@ -25,6 +24,7 @@ interface MonthlyTrendProps {
   data: Array<{
     month: string;
     total: number;
+    pendingDecision: number;
     pendingArrival: number;
     noShow: number;
     trialing: number;
@@ -62,6 +62,14 @@ export function MonthlyTrendChart({ data }: MonthlyTrendProps) {
               stroke="#82ca9d"
               fill="#82ca9d"
               name="已转正"
+            />
+            <Area
+              type="monotone"
+              dataKey="pendingDecision"
+              stackId="2"
+              stroke="#64748b"
+              fill="#64748b"
+              name="待定"
             />
             <Area
               type="monotone"
@@ -111,7 +119,7 @@ interface StatusDistributionProps {
   }>;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#94A3B8'];
+const COLORS = ['#64748B', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#94A3B8'];
 
 export function StatusDistributionChart({ data }: StatusDistributionProps) {
   return (

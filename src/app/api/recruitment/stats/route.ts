@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
 
     const basicStats = {
       totalCandidates: yearlyInterviewRecords.length,
+      pendingDecisionCount: yearlyInterviewRecords.filter(record => record.recruitmentStatus === 'pending_decision').length,
       pendingArrivalCount: yearlyInterviewRecords.filter(record => record.recruitmentStatus === 'pending_arrival').length,
       noShowCount: yearlyInterviewRecords.filter(record => record.recruitmentStatus === 'no_show').length,
       trialingCount: yearlyInterviewRecords.filter(record => record.recruitmentStatus === 'trialing').length,
@@ -56,6 +57,7 @@ export async function GET(request: NextRequest) {
       return {
         month: `${month}月`,
         total: monthRecords.length,
+        pendingDecision: monthRecords.filter(record => record.recruitmentStatus === 'pending_decision').length,
         pendingArrival: monthRecords.filter(record => record.recruitmentStatus === 'pending_arrival').length,
         noShow: monthRecords.filter(record => record.recruitmentStatus === 'no_show').length,
         trialing: monthRecords.filter(record => record.recruitmentStatus === 'trialing').length,
@@ -65,6 +67,7 @@ export async function GET(request: NextRequest) {
     });
 
     const statusDistribution = [
+      { value: 'pending_decision', status: '待定', count: basicStats.pendingDecisionCount },
       { value: 'pending_arrival', status: '可试岗待到岗', count: basicStats.pendingArrivalCount },
       { value: 'no_show', status: '未到岗', count: basicStats.noShowCount },
       { value: 'trialing', status: '试岗中', count: basicStats.trialingCount },

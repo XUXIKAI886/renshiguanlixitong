@@ -1,3 +1,5 @@
+export * from './recruitment-status';
+
 // 积分行为规则常量
 export const SCORE_BEHAVIORS = {
   // 扣分项目
@@ -22,23 +24,6 @@ export const SCORE_BEHAVIORS = {
     { type: 'help_newcomer', score: 5, description: '帮助新员工' },
     { type: 'outstanding_work', score: 10, description: '工作表现突出' },
   ],
-};
-
-// 招聘状态常量
-export const RECRUITMENT_STATUS = {
-  PENDING_ARRIVAL: 'pending_arrival',
-  NO_SHOW: 'no_show',
-  TRIALING: 'trialing',
-  REGULARIZED: 'regularized',
-  REJECTED: 'rejected',
-} as const;
-
-export const RECRUITMENT_STATUS_LABELS = {
-  [RECRUITMENT_STATUS.PENDING_ARRIVAL]: '可试岗待到岗',
-  [RECRUITMENT_STATUS.NO_SHOW]: '未到岗',
-  [RECRUITMENT_STATUS.TRIALING]: '试岗中',
-  [RECRUITMENT_STATUS.REGULARIZED]: '已转正',
-  [RECRUITMENT_STATUS.REJECTED]: '已拒绝',
 };
 
 // 员工状态常量

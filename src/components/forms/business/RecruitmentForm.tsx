@@ -12,7 +12,14 @@ import { Textarea } from '@/components/ui/form/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form/form';
 import { RecruitmentRecord } from '@/types';
-import { CITIES, DEPARTMENTS, GENDER_LABELS, RECRUITMENT_STATUS_LABELS, POSITIONS } from '@/constants';
+import {
+  CITIES,
+  DEPARTMENTS,
+  GENDER_LABELS,
+  POSITIONS,
+  RECRUITMENT_STATUS_LABELS,
+  RECRUITMENT_STATUS_VALUES,
+} from '@/constants';
 import {
   calculateTrialDays,
   getArrivalDate,
@@ -39,7 +46,7 @@ const formSchema = z.object({
   department: z.enum(['销售部', '运营部', '人事部', '未分配'], { message: '请选择部门' }),
   arrivalDate: z.string().optional(),
   resignationReason: z.string().max(500, '备注内容最多500字').optional(),
-  recruitmentStatus: z.enum(['pending_arrival', 'no_show', 'trialing', 'regularized', 'rejected']),
+  recruitmentStatus: z.enum(RECRUITMENT_STATUS_VALUES),
 }).superRefine((data, ctx) => {
   if (requiresArrivalDate(data.recruitmentStatus) && !data.arrivalDate) {
     ctx.addIssue({

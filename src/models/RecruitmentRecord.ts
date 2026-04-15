@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { RecruitmentRecord as IRecruitmentRecord } from '@/types';
+import { RECRUITMENT_STATUS_VALUES } from '@/constants';
 import { calculateTrialDays, normalizeRecruitmentStatus } from '@/utils/recruitment';
 
 // 扩展Document接口
@@ -150,8 +151,8 @@ const RecruitmentRecordSchema = new Schema<RecruitmentRecordDocument>(
       type: String,
       required: [true, '招聘状态不能为空'],
       enum: {
-        values: ['pending_arrival', 'no_show', 'trialing', 'regularized', 'rejected'],
-        message: '招聘状态只能是可试岗待到岗、未到岗、试岗中、已转正或已拒绝'
+        values: RECRUITMENT_STATUS_VALUES,
+        message: '招聘状态只能是待定、可试岗待到岗、未到岗、试岗中、已转正或已拒绝'
       },
       default: 'pending_arrival'
     }
@@ -216,6 +217,7 @@ RecruitmentRecordSchema.statics.getStatistics = async function() {
   });
   
   const pendingArrivalCount = await this.countDocuments({ recruitmentStatus: 'pending_arrival' });
+  const pendingDecisionCount = await this.countDocuments({ recruitmentStatus: 'pending_decision' });
   const noShowCount = await this.countDocuments({ recruitmentStatus: 'no_show' });
   const trialingCount = await this.countDocuments({ recruitmentStatus: 'trialing' });
   const regularizedCount = await this.countDocuments({ recruitmentStatus: 'regularized' });
@@ -224,6 +226,7 @@ RecruitmentRecordSchema.statics.getStatistics = async function() {
   return {
     totalCount,
     monthlyCount,
+    pendingDecisionCount,
     pendingArrivalCount,
     noShowCount,
     trialingCount,
