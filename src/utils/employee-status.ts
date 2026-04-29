@@ -65,10 +65,10 @@ export const resolveEmployeeResignationDate = ({
     return undefined;
   }
 
-  const existingDate = normalizeDate(existingResignationDate);
-  if (currentWorkStatus === 'resigned' && existingDate) {
-    return existingDate;
+  const requestedDate = normalizeDate(requestedResignationDate);
+  if (requestedDate) {
+    return requestedDate;
   }
 
-  return normalizeDate(requestedResignationDate);
+  return normalizeDate(existingResignationDate);
 };

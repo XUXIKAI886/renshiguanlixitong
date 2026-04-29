@@ -26,8 +26,20 @@ const preservedResignationDate = resolveEmployeeResignationDate({
 
 assert.equal(
   preservedResignationDate?.toISOString(),
+  new Date('2026-04-20T00:00:00.000Z').toISOString(),
+  '已离职员工重新设置离职日期时，应使用用户新选择的离职日期'
+);
+
+const preservedWithoutRequestDate = resolveEmployeeResignationDate({
+  currentWorkStatus: 'resigned',
+  nextWorkStatus: 'resigned',
+  existingResignationDate,
+});
+
+assert.equal(
+  preservedWithoutRequestDate?.toISOString(),
   existingResignationDate.toISOString(),
-  '已离职员工后续编辑时，不应覆盖已有离职日期'
+  '已离职员工未提交新离职日期时，应保留已有离职日期'
 );
 
 const clearedResignationDate = resolveEmployeeResignationDate({

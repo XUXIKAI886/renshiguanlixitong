@@ -98,6 +98,7 @@ const EmployeeSchema = new Schema<EmployeeDocument>(
       validate: {
         validator: function(this: EmployeeDocument, value?: Date) {
           if (!value) return true;
+          if (!this.regularDate) return true;
           return value >= this.regularDate;
         },
         message: '离职日期不能早于入司日期'
