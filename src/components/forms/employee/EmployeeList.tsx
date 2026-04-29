@@ -8,8 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/layout/table';
 import { Badge } from '@/components/ui/basic/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/interaction/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/interaction/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/interaction/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/layout/dropdown-menu';
 import { IdCardDisplay } from '@/components/ui/form/id-card-display';
 import { PasswordVerification } from '@/components/ui/form/password-verification';
@@ -41,7 +40,7 @@ interface EmployeeListProps {
   onSearch: (keyword: string) => void;
   onFilter: (filters: any) => void;
   onEdit: (employee: Employee) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string, resignationDate: string) => Promise<boolean>;
   onAdd: () => void;
   isLoading?: boolean;
 }
@@ -74,11 +73,14 @@ export default function EmployeeList({
   const [showFilters, setShowFilters] = useState(false);
   const [overviewStats, setOverviewStats] = useState<any>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [showResignationDialog, setShowResignationDialog] = useState(false);
+  const [resignationEmployee, setResignationEmployee] = useState<Employee | null>(null);
+  const [resignationDate, setResignationDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
   // 密码验证相关状态
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState<{
-    type: 'edit' | 'delete';
+    type: 'edit';
     employee: Employee;
   } | null>(null);
 
@@ -164,8 +166,13 @@ export default function EmployeeList({
 
   // 处理删除操作
   const handleDeleteClick = (employee: Employee) => {
-    setPendingAction({ type: 'delete', employee });
-    setShowPasswordDialog(true);
+    setResignationEmployee(employee);
+    setResignationDate(
+      employee.resignationDate
+        ? format(new Date(employee.resignationDate), 'yyyy-MM-dd')
+        : format(new Date(), 'yyyy-MM-dd')
+    );
+    setShowResignationDialog(true);
   };
 
   // 密码验证成功后执行操作
@@ -173,8 +180,6 @@ export default function EmployeeList({
     if (pendingAction) {
       if (pendingAction.type === 'edit') {
         onEdit(pendingAction.employee);
-      } else if (pendingAction.type === 'delete') {
-        onDelete(pendingAction.employee._id!);
       }
       setPendingAction(null);
     }
@@ -184,6 +189,26 @@ export default function EmployeeList({
   const handlePasswordClose = () => {
     setShowPasswordDialog(false);
     setPendingAction(null);
+  };
+
+  const handleResignationClose = () => {
+    setShowResignationDialog(false);
+    setResignationEmployee(null);
+    setResignationDate(format(new Date(), 'yyyy-MM-dd'));
+  };
+
+  const handleResignationConfirm = async () => {
+    if (!resignationEmployee?._id) return;
+
+    if (!resignationDate) {
+      toast.error('请选择离职日期');
+      return;
+    }
+
+    const isSuccess = await onDelete(resignationEmployee._id, resignationDate);
+    if (isSuccess) {
+      handleResignationClose();
+    }
   };
 
   const handleExport = () => {
@@ -444,6 +469,7 @@ export default function EmployeeList({
                   <TableHead>在职天数</TableHead>
                   <TableHead>总积分</TableHead>
                   <TableHead>入司日期</TableHead>
+                  <TableHead>离职日期</TableHead>
                   <TableHead>今日日期</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
@@ -451,13 +477,13 @@ export default function EmployeeList({
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={14} className="text-center py-8">
+                    <TableCell colSpan={15} className="text-center py-8">
                       加载中...
                     </TableCell>
                   </TableRow>
                 ) : employees.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={14} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={15} className="text-center py-8 text-muted-foreground">
                       暂无数据
                     </TableCell>
                   </TableRow>
@@ -507,6 +533,9 @@ export default function EmployeeList({
                       </TableCell>
                       <TableCell>
                         {formatDate(employee.regularDate)}
+                      </TableCell>
+                      <TableCell>
+                        {employee.resignationDate ? formatDate(employee.resignationDate) : '-'}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {formatDate(new Date())}
@@ -569,13 +598,52 @@ export default function EmployeeList({
         isOpen={showPasswordDialog}
         onClose={handlePasswordClose}
         onSuccess={handlePasswordSuccess}
-        title={pendingAction?.type === 'edit' ? '编辑验证' : '离职设置验证'}
-        description={
-          pendingAction?.type === 'edit'
-            ? '为保护数据安全，请输入编辑密码'
-            : '为保护数据安全，请输入离职设置密码'
-        }
+        title="编辑验证"
+        description="为保护数据安全，请输入编辑密码"
       />
+
+      <Dialog
+        open={showResignationDialog}
+        onOpenChange={(open) => {
+          if (open) {
+            setShowResignationDialog(true);
+          } else {
+            handleResignationClose();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>设置离职日期</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">
+                {resignationEmployee?.name || '-'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                确认后员工状态将更新为离职
+              </p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">离职日期</label>
+              <Input
+                type="date"
+                value={resignationDate}
+                onChange={(event) => setResignationDate(event.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={handleResignationClose}>
+                取消
+              </Button>
+              <Button onClick={handleResignationConfirm}>
+                确认
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

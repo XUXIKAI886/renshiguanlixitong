@@ -37,6 +37,7 @@ export interface Employee {
   idCard: string;
   workingDays: number;
   workStatus: 'active' | 'resigned' | 'leave';
+  resignationDate?: Date;
   department?: string;
   position?: string;
   totalScore: number;

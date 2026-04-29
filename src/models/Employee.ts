@@ -93,6 +93,16 @@ const EmployeeSchema = new Schema<EmployeeDocument>(
       },
       default: 'active'
     },
+    resignationDate: {
+      type: Date,
+      validate: {
+        validator: function(this: EmployeeDocument, value?: Date) {
+          if (!value) return true;
+          return value >= this.regularDate;
+        },
+        message: '离职日期不能早于入司日期'
+      }
+    },
     department: {
       type: String,
       trim: true,
@@ -144,6 +154,7 @@ EmployeeSchema.index({ city: 1 });
 EmployeeSchema.index({ department: 1 });
 EmployeeSchema.index({ position: 1 });
 EmployeeSchema.index({ workStatus: 1 });
+EmployeeSchema.index({ resignationDate: -1 });
 EmployeeSchema.index({ totalScore: -1 });
 
 // 虚拟字段：计算在职天数

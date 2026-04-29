@@ -16,6 +16,7 @@ type ExportableEmployee = {
   position?: string;
   workStatus?: Employee['workStatus'];
   workingDays?: number;
+  resignationDate?: Date | string;
   totalScore?: number;
   regularDate?: Date | string;
 };
@@ -128,6 +129,7 @@ export function formatEmployeeDataForExport(employees: ExportableEmployee[]) {
       : employee.workingDays,
     '总积分': employee.totalScore,
     '入司日期': formatExportDate(employee.regularDate),
+    '离职日期': formatExportDate(employee.resignationDate),
     '今日日期': new Date().toLocaleDateString('zh-CN')
   }));
 }

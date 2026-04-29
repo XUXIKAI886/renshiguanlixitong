@@ -3,7 +3,10 @@ import { z } from 'zod';
 import mongoose from 'mongoose';
 import connectDB from '@/lib/mongodb';
 import { Employee } from '@/models';
-import { resolveEmployeeWorkingDays } from '@/utils/employee-status';
+import {
+  resolveEmployeeResignationDate,
+  resolveEmployeeWorkingDays,
+} from '@/utils/employee-status';
 import { getZodIssueDetails, isMongoDuplicateKeyError } from '@/utils/api-errors';
 
 // 员工更新验证模式
@@ -22,6 +25,7 @@ const updateEmployeeSchema = z.object({
     '请输入有效的身份证号'
   ).optional(),
   workStatus: z.enum(['active', 'resigned', 'leave']).optional(),
+  resignationDate: z.string().min(1, '离职日期不能为空').optional(),
   department: z.enum([
     '销售部', '运营部', '人事部', '未分配'
   ]).optional(),
@@ -136,26 +140,61 @@ export async function PUT(
       }
     }
 
-    const nextWorkStatus = validatedData.workStatus || existingEmployee.workStatus;
-    const nextRegularDate = validatedData.regularDate
-      ? new Date(validatedData.regularDate)
+    const { resignationDate: requestedResignationDateValue, ...employeeUpdates } = validatedData;
+    const nextWorkStatus = employeeUpdates.workStatus || existingEmployee.workStatus;
+    const nextRegularDate = employeeUpdates.regularDate
+      ? new Date(employeeUpdates.regularDate)
       : existingEmployee.regularDate;
+    const requestedResignationDate = requestedResignationDateValue
+      ? new Date(requestedResignationDateValue)
+      : undefined;
+    const resignationDate = resolveEmployeeResignationDate({
+      existingResignationDate: existingEmployee.resignationDate,
+      requestedResignationDate,
+      currentWorkStatus: existingEmployee.workStatus,
+      nextWorkStatus,
+    });
 
-    const updateData = {
-      ...validatedData,
-      ...(validatedData.regularDate ? { regularDate: nextRegularDate } : {}),
+    if (
+      existingEmployee.workStatus !== 'resigned' &&
+      nextWorkStatus === 'resigned' &&
+      !resignationDate
+    ) {
+      return NextResponse.json(
+        { success: false, error: '请填写离职日期' },
+        { status: 400 }
+      );
+    }
+
+    if (resignationDate && resignationDate < nextRegularDate) {
+      return NextResponse.json(
+        { success: false, error: '离职日期不能早于入司日期' },
+        { status: 400 }
+      );
+    }
+
+    const updateData: Record<string, unknown> = {
+      ...employeeUpdates,
+      ...(employeeUpdates.regularDate ? { regularDate: nextRegularDate } : {}),
+      ...(resignationDate ? { resignationDate } : {}),
       workingDays: resolveEmployeeWorkingDays({
         regularDate: nextRegularDate,
         existingWorkingDays: existingEmployee.workingDays,
         currentWorkStatus: existingEmployee.workStatus,
         nextWorkStatus,
+        referenceDate: resignationDate,
       }),
     };
 
     // 更新员工信息
     const updatedEmployee = await Employee.findByIdAndUpdate(
       id,
-      updateData,
+      nextWorkStatus === 'resigned'
+        ? updateData
+        : {
+            $set: updateData,
+            $unset: { resignationDate: '' },
+          },
       { new: true, runValidators: true }
     );
 
@@ -251,12 +290,14 @@ export async function DELETE(
       existingWorkingDays: employee.workingDays,
       currentWorkStatus: employee.workStatus,
       nextWorkStatus: 'resigned',
+      referenceDate: new Date(),
     });
 
     const updatedEmployee = await Employee.findByIdAndUpdate(
       id,
       {
         workStatus: 'resigned',
+        resignationDate: new Date(),
         workingDays,
       },
       { new: true, runValidators: true }

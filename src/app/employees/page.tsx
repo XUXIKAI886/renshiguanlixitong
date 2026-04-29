@@ -118,24 +118,34 @@ export default function EmployeesPage() {
     }
   };
 
-  // 删除员工
-  const handleDelete = async (id: string) => {
+  // 设置员工离职
+  const handleDelete = async (id: string, resignationDate: string) => {
     try {
       const response = await fetch(`/api/employees/${id}`, {
-        method: 'DELETE',
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          workStatus: 'resigned',
+          resignationDate,
+        }),
       });
 
       const result = await response.json();
 
       if (result.success) {
-        toast.success('员工删除成功');
+        toast.success('员工离职日期已保存');
         fetchEmployees();
+        return true;
       } else {
-        toast.error(result.error || '删除失败');
+        toast.error(result.error || '设置离职失败');
+        return false;
       }
     } catch (error) {
-      console.error('删除员工失败:', error);
-      toast.error('删除员工失败');
+      console.error('设置离职失败:', error);
+      toast.error('设置离职失败');
+      return false;
     }
   };
 
