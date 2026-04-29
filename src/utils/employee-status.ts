@@ -8,6 +8,7 @@ interface ResolveEmployeeWorkingDaysParams {
   currentWorkStatus?: EmployeeWorkStatus;
   nextWorkStatus?: EmployeeWorkStatus;
   referenceDate?: Date;
+  recalculateForResignationDateChange?: boolean;
 }
 
 interface ResolveEmployeeResignationDateParams {
@@ -33,6 +34,7 @@ export const resolveEmployeeWorkingDays = ({
   currentWorkStatus,
   nextWorkStatus,
   referenceDate = new Date(),
+  recalculateForResignationDateChange = false,
 }: ResolveEmployeeWorkingDaysParams): number => {
   const normalizedRegularDate = new Date(regularDate);
 
@@ -47,6 +49,14 @@ export const resolveEmployeeWorkingDays = ({
 
   // 首次办理离职时，冻结离职当天的最终在职天数
   if (currentWorkStatus !== 'resigned' && nextWorkStatus === 'resigned') {
+    return calculateWorkingDays(normalizedRegularDate, referenceDate);
+  }
+
+  if (
+    currentWorkStatus === 'resigned' &&
+    nextWorkStatus === 'resigned' &&
+    recalculateForResignationDateChange
+  ) {
     return calculateWorkingDays(normalizedRegularDate, referenceDate);
   }
 

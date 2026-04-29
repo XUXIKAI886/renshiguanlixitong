@@ -183,6 +183,7 @@ export async function PUT(
         currentWorkStatus: existingEmployee.workStatus,
         nextWorkStatus,
         referenceDate: resignationDate,
+        recalculateForResignationDateChange: Boolean(requestedResignationDateValue),
       }),
     };
 
